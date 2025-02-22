@@ -1,0 +1,28 @@
+{
+    "patientDetails": {
+        "medicalRecordNo": "000000022-001",
+        "name": "Pork, John",
+        "providerName": "Mint Home Health Care Inc.",
+        "principalDiagnosis": "diabetes mellitus with",
+        "pertinentdiagnosis": "Acute diastolic (congestive) heart failure -- Hyp hrt & chr kdny dis w hrt f: -- Chronic kidney disease, unspec: -- Athscl heart disease of native -- Other disorders of lung -- Paroxysmal atrial fibrillation"
+    },
+    "diagnosis": {
+        "pertinentdiagnosisCont": "Hypothyroidism, unspecified -- Mixed hyperlipidemia -- Old myocardial infarction -- Hypokalemia -- Gastro-esophageal reflux disease without esophagitis -- Hypomagnesemia -- Age-related cognitive decline -- Primary generalized (osteo) arthritis -- Vitamin D deficiency, unspecified -- Idiopathic gout, multiple sites -- Age-related osteoporosis w/o current pathological fracture -- Weakness -- Long term (current) use of anticoagulants -- Dependence on supplemental oxygen",
+        "constipated": "No",
+        "painIn": "Lower back, Neck, Joints",
+        "depression": true
+    },
+    "medications": {
+        "medications": "Ozempic 2 mg/3 ml, inject 0.5 mg subcutaneously daily; Janumet 50-500 mg, 1 tablet by mouth 2 times daily; Atorvastatin 20 mg, 1 tablet by mouth daily; Aspirin EC 81 mg, 1 tablet by mouth daily; Levothyroxine 75 mcg, 1 tablet by mouth daily; Allopurinol 100 mg, 1 tablet by mouth daily; Alendronate 70 mg, 1 tablet by mouth weekly; Omeprazole 40 mg, 1 tablet by mouth daily; Amiodarone HCL 200 mg, 1 tablet by mouth 2 times daily; Hydralazine 50 mg, 1 tablet by mouth 2 times daily as needed for SBP > 160 mmHg; Olmesartan-HCTZ 40-25 mg, 1 tablet by mouth daily; Carvedilol 12.5 mg, 1 tablet by mouth 2 times daily; Clonidine HCL 0.2 mg/day, apply 1 patch weekly; Vitamin D-3 2000 International Units, 1 tablet by mouth daily; Magnesium Oxide 400 mg, 1 tablet by mouth daily; Eliquis 2.5 mg, 1 tablet by mouth 2 times daily; Ipratropium-Albuterol 0.5-3 mg/3 ml vial, use via nebulizer every 6 hours as needed for SOB; Furosemide 20 mg, 1 tablet by mouth daily Monday-Wednesday-Friday; Isosorbide Dinitrate 10 mg, 1 tablet by mouth 2 times daily; Plavix 75 mg, 1 tablet by mouth daily; Potassium Chloride 8 meq, 1 tablet by mouth daily; Oxygen 3L/min via NC continuous; Tylenol 325 mg, 1 tablet by mouth daily as needed for pain",
+        "painMedications": "Tylenol 325 mg, 1 tablet by mouth daily as needed for pain"
+    },
+    "extraDetails": {
+        "safetyMeasures": "Bleeding precautions, Fall precautions, Clear pathways, Infection control",
+        "safetyMeasuresCont": "Walker, Cane, Universal Precautions, 911 protocol, COVID-19 Precautions, Safe Sharps Disposal, Skin/Foot Care",
+        "nutritionalReq": "NAS, Controlled Carbohydrate, Low Fat",
+        "nutritionalReqCont": "Low Cholesterol, High Fiber, NCS",
+        "edema": "Pedal R/L, Pitting +1",
+        "can": true,
+        "walker": true
+    }
+}
