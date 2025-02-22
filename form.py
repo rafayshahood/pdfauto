@@ -43,7 +43,7 @@ def complete_form():
             appointment_dates.append(date_val)
             appointment_times.append(time_val)
         
-        if action == "Reset":
+        if action == "Discharge":
             st.write("Enter additional appointment details for Reset (10th appointment):")
             col1, col2 = st.columns(2)
             with col1:

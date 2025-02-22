@@ -293,10 +293,10 @@ def fillDoc():
 
     # Get Action
     getAction = shared_data.data['action'] 
-    if getAction == "Discharge":
+    if getAction == "Reset":
         valuesToGet = 9
         wordFileName = './noteTemplates/9-page-version.docx'  # Ensure this file exists in your working directory
-    elif getAction == "Reset":
+    elif getAction == "Discharge":
         valuesToGet = 10
         wordFileName = './noteTemplates/10-page-version.docx'  # Ensure this file exists in your working directory
 

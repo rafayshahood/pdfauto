@@ -21,9 +21,9 @@ def process_diseases():
     # Build the disease string and split it into an array.
     getAction = shared_data.data['action']
     if getAction == "Discharge":
-        diseaseLength = 9
-    elif getAction == "Reset":
         diseaseLength = 10
+    elif getAction == "Reset":
+        diseaseLength = 9
     
     patientDiseases = (
         shared_data.data['extraction_results']['patientDetails']['principalDiagnosis'] + "--" +
