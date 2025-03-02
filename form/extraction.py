@@ -33,12 +33,15 @@ class Diagnosis(BaseModel):
     painIn: str = Field(description="Pain in which places of the patient")
     # depression check
     depression: bool = Field(description="In section 19. Mental Status, Whether the individual is depressed or not?")
-
+    # diabetec
+    diabetec: bool = Field(description="Does the patient suffer from Diabetes Mellitus Type 2?")
+    # oxygen val
+    oxygen: bool = Field(description="In section 21. Orders for Discipline and Treatments continued. Under the heading: SN TO PERFORM EVERY VISIT, check whether a statment regarding o2 or oxygen is present or not?")
     
 class Medications(BaseModel):
     # all medications
     medications: str = Field(description="10. Medications: Dose/Frequency/Route (N)ew (C)hanged")
-    painMedications: str = Field(description="What is the pain medication give to the individual?")
+    painMedications: str = Field(description="What is the pain medication give to the individual? Copy paste the pain medication with instruction. If there is no pain medication return empty string.")
 
 class ExtraDetails(BaseModel):
     # safety measures
@@ -52,8 +55,8 @@ class ExtraDetails(BaseModel):
     # edema info
     edema: str = Field(description="Edema Management") 
     # cane walker check
-    can: bool = Field(description="Whether the individual has can in 18.B. Activites Permitted?")
-    walker: bool = Field(description="Whether the has walker in 18.B. Activites Permitted?")
+    can: bool = Field(description="Whether the individual has cane in 18.B. Activites Permitted?")
+    walker: bool = Field(description="Whether the individual has walker in 18.B. Activites Permitted?")
 
     
 

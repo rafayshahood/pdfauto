@@ -4,8 +4,7 @@ import time
 import logging
 import os
 from dotenv import load_dotenv
-from datetime import datetime
-import shared_data
+import frontend.data.shared_data as shared_data
 # Configure logging.
 logging.basicConfig(level=logging.INFO)
 
@@ -19,11 +18,7 @@ openai.api_key = os.environ.get("OPENAI_API_KEY")
 
 def process_diseases():
     # Build the disease string and split it into an array.
-    getAction = shared_data.data['action']
-    if getAction == "Discharge":
-        diseaseLength = 10
-    elif getAction == "Reset":
-        diseaseLength = 9
+    diseaseLength = 9
     
     patientDiseases = (
         shared_data.data['extraction_results']['patientDetails']['principalDiagnosis'] + "--" +

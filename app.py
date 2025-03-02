@@ -1,19 +1,11 @@
 import streamlit as st
-import tempfile
-import sys
-from datetime import datetime, timedelta
-import json
-import os
-from dotenv import load_dotenv
-from form import complete_form
-import shared_data
-from signin import sign_in
-from samediseaseEngine import process_diseases
-from wordFilling import fillDoc
-def showResults():
-    st.write("### Submission Details and Extraction Results")
-    st.json(shared_data.data)
-
+# from frontend.form.form import complete_form
+# from frontend.form.signin import sign_in
+from form.signin import sign_in
+from form.form import complete_form  # Ensure this import is correct
+from filling.wordFilling import fillDoc  # Ensure this import is correct
+from diseasEng.diseaseEngine import process_diseases
+from filling.wordFilling import fillDoc
 
 def main():
     # Set default page if not already set.
@@ -27,10 +19,13 @@ def main():
         # Navigate based on page state.
         if st.session_state.page == "form":
             complete_form()
-        elif st.session_state.page == "disease":
-            process_diseases()  # This function contains your disease analysis engine.
+
         elif st.session_state.page == "doc":
             fillDoc()  # This function contains your disease analysis engine.    
+
+        elif st.session_state.page == "disease_analysis":
+            process_diseases()  # New function to process diseases and medications
+
         else:
             st.write("Unknown page state.")
 

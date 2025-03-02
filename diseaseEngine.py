@@ -4,7 +4,7 @@ import time
 import logging
 from datetime import datetime
 import os
-import shared_data
+import frontend.data.shared_data as shared_data
 import streamlit as st  # For UI elements
 import json
 
