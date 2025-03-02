@@ -98,13 +98,13 @@ def fillDoc():
             'cane, walker': canWalkerText,
             'Pain in Lower back, Neck, Joints': extractedResults['diagnosis']['painIn'],
             '4/10': painScaleArray[i],
-            'Tylenol 325 mg. 1 tablet by moiuth daily': extractedResults['medications']['painMedications'],
+            'tpainmedhere': extractedResults['medications']['painMedications'],
             '05/07/23': adjust_dates(appointment_dates[i], appointment_times[i], constipation),
             'NAS, Controlled carbohydrate Low fat, Low cholesterol, NCS, Dash': extractedResults['extraDetails']['nutritionalReq'] + ", " + extractedResults['extraDetails']['nutritionalReqCont']
             }
         # Conditionally add the oxygen value only if oxygenFlag is True
         if oxygenFlag:
-            replacements_first_col['OXVAL)('] = oxygenArray[i]
+            replacements_first_col['OXVAL)('] = oxygenArray[i]+ "%"
         else:
             replacements_first_col['OXVAL)('] = ""
 
@@ -130,8 +130,10 @@ def fillDoc():
         edemaResults = extractedResults['extraDetails']['edema']
 
     
-        out_file = process_document_full(wordFileName, headerPage, replacements_first_col, replacements_second_col,
-                                         allSafetyMeasures, dm2_value, edemaResults, depressed_value, i)
+        out_file = process_document_full(
+            wordFileName, headerPage, replacements_first_col, replacements_second_col,
+            allSafetyMeasures, dm2_value, edemaResults, depressed_value, i, getAction, valuesToGet
+        )
         output_files.append(out_file)
 
     for file in output_files:

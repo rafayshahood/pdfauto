@@ -32,7 +32,8 @@ def process_cell(cell, replacement_dict, dynamic_counters):
 # --------------------------
 # Process document function.
 def process_document_full(file_path, newHeader, replacement1, replacement2, 
-                          allSafetyMeasures, dm2_value, edemaResults, depressed_value, iteration_index):
+                          allSafetyMeasures, dm2_value, edemaResults, depressed_value, 
+                          iteration_index, action, total_pages):
     """
     Processes the Word document and performs the following tasks:
       1. Header text replacement.
@@ -177,6 +178,25 @@ def process_document_full(file_path, newHeader, replacement1, replacement2,
                                 run.text = run.text.replace("☐", "☒", 1)
                             else:
                                 run.text = run.text.replace("☒", "☐")
+
+        # 7. Extra Replacement on the Last Page (only in cell index 1)
+    if iteration_index == (total_pages - 1):
+        target_text = "(for next visit): continue to implement plan of care as approved by PMD."
+        if action == "Reset":
+            replacement_text = "for next visit): evaluate Patient/Pcg regarding possible recertification."
+        elif action == "Discharge":
+            replacement_text = "for next visit): evaluate Patient/Pcg regarding possible discharge."
+        else:
+            replacement_text = target_text  # Fallback if needed
+
+        # Iterate only over the second column of each table.
+        for table in doc.tables:
+            for row in table.rows:
+                cell = row.cells[1]
+                for paragraph in cell.paragraphs:
+                    for run in paragraph.runs:
+                        if target_text in run.text:
+                            run.text = run.text.replace(target_text, replacement_text)
     
     # Save the modified document with a name based on iteration (e.g., "page1.docx", "page2.docx", etc.)
     output_file = f"page{iteration_index+1}.docx"

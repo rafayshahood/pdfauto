@@ -160,7 +160,7 @@ def process_diseases():
 
             with col3:
                 if st.button(f"🌐 Ask GPT for {retry_disease}", key=f"gpt_med_{page}"):
-                    with st.spinner(f"Fetching medication for {retry_disease}..."):
+                    with st.spinner(f"Fetching data for {retry_disease}..."):
                         # Ensure GPT response is correctly parsed as JSON
                         gpt_result = fetch_info_from_gpt(client, "disease", retry_disease)
                         if gpt_result:
@@ -189,7 +189,7 @@ def process_diseases():
 
             retry_med = st.text_input(f"Enter new medication for {page}", "", key=f"retry_med_{page}")
 
-            col1, col2, col3 = st.columns(3)
+            col1, col2, col3, col4 = st.columns(4)
             with col1:
                 if st.button(f"✔️ Retry with {retry_med}", key=f"retry_med_btn_{page}"):
                     with st.spinner(f"Updating medication..."):
@@ -205,6 +205,19 @@ def process_diseases():
                     st.rerun()
 
             with col3:
+                if st.button(f"🌐 Ask GPT for {retry_disease}", key=f"gpt_med_{page}"):
+                    with st.spinner(f"Fetching data for {retry_disease}..."):
+                        # Ensure GPT response is correctly parsed as JSON
+                        gpt_result = fetch_info_from_gpt(client, "disease", retry_disease)
+                        if gpt_result:
+                            try:
+                                parsed_response = json.loads(gpt_result) if isinstance(gpt_result, str) else gpt_result
+                                st.session_state["mainContResponse"][page] = json.dumps(parsed_response)
+                            except json.JSONDecodeError:
+                                st.error("Error processing GPT response. Please try again.")
+                    st.rerun()
+
+            with col4:
                 if st.button(f"❌ Skip {page}", key=f"skip_med_{page}"):
                     with st.spinner(f"Skipping medication for {disease_name}..."):
                         st.session_state["skipped_pages"].add(page)  # Store skipped page
