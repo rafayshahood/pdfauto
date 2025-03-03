@@ -15,9 +15,10 @@ class PatientDetails(BaseModel):
     # medical record no.
     medicalRecordNo: str = Field(description="Medical Record No. of the individual")
     # patient name
-    name: str = Field(description="Patient's Name and Address of the individual")
-    # provider name
-    providerName: datetime = Field(description="Provider's Name, Address, and Telephone Number")
+    # # patient name
+    name: str = Field(description="What is the Patient's Name?")
+    # # provider name
+    providerName: datetime = Field(description="What is the provider's name?")
     # principal diagnosis
     principalDiagnosis: str = Field(description="principal diagnosis of the patient?")
     # all other pertinant diagnosis

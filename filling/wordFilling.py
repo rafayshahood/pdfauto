@@ -126,7 +126,7 @@ def fillDoc():
 
         dm2_value =  extractedResults['diagnosis']['diabetec']
         depressed_value = extractedResults['diagnosis']['depression']
-        allSafetyMeasures = extractedResults['extraDetails']['safetyMeasures'] + extractedResults['extraDetails']['safetyMeasuresCont']
+        allSafetyMeasures = extractedResults['extraDetails']['safetyMeasures'] + ","  + extractedResults['extraDetails']['safetyMeasuresCont']
         edemaResults = extractedResults['extraDetails']['edema']
 
     

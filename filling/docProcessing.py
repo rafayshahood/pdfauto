@@ -76,18 +76,20 @@ def process_document_full(file_path, newHeader, replacement1, replacement2,
             process_cell(cell, replacement2, dynamic_counters2)
                                 
     
-    # 3. Safety Measures Checkboxes Update.
+    # Convert the safety measures string into a list of lower-case items
     measures = [s.strip().lower() for s in allSafetyMeasures.split(",")]
+    
+    # Mapping from document label to the keyword(s) we expect in the safety measures.
     safety_measures_mapping = {
         "Bleeding Precautions": "bleeding precautions",
         "Fall Precautions": "fall precautions",
         "Clear pathways": "clear pathways",
-        "Infection control measures": "infection control measures",
+        "Infection control measures": "infection control",
         "Cane, walker Precautions": ("cane", "walker"),
         "Universal Precautions": "universal precautions",
         "Other:911 protocols": "911 protocol"
     }
-    # Uncheck all safety measure checkboxes.
+    # --- First Pass: Uncheck all target checkboxes ---
     for table in doc.tables:
         for row in table.rows:
             for cell in row.cells:
@@ -96,8 +98,8 @@ def process_document_full(file_path, newHeader, replacement1, replacement2,
                         for label in safety_measures_mapping.keys():
                             if label in run.text:
                                 pattern = r"(☒|☐)(" + re.escape(label) + r")"
-                                run.text = re.sub(pattern, r"☐\2", run.text)
-    # Check safety measure checkboxes based on provided measures.
+                                replacement = r"☐\2"
+    # --- Second Pass: Check individual checkboxes if needed ---
     for table in doc.tables:
         for row in table.rows:
             for cell in row.cells:
@@ -108,15 +110,16 @@ def process_document_full(file_path, newHeader, replacement1, replacement2,
                                 should_check = False
                                 if isinstance(expected, tuple):
                                     for item in expected:
-                                        if item in measures:
+                                        if any(item in m or m in item for m in measures):
                                             should_check = True
                                             break
                                 else:
-                                    if expected in measures:
+                                    if any(expected in m or m in expected for m in measures):
                                         should_check = True
                                 
                                 pattern = r"(☒|☐)(" + re.escape(label) + r")"
-                                run.text = re.sub(pattern, r"☒\2" if should_check else r"☐\2", run.text)
+                                replacement = r"☒\2" if should_check else r"☐\2"
+                                run.text = re.sub(pattern, replacement, run.text)
     
     # 4. DM II Checkbox Update.
     for table in doc.tables:

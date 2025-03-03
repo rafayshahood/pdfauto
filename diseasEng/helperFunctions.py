@@ -106,7 +106,7 @@ def fetch_info_from_gpt(client, query_type, query_value, o2_flag=False, diabetec
         ```json
         {{
           "text1": "Altered status due to {query_value}. Knowledge deficit regarding measures to control {query_value} and the medication [insert medication] as ordered by MD.",
-          "text2": "SN admitted the patient for comprehensive skilled nursing assessment, observation and evaluation of all body systems. SN to assess vital signs, pain level. SN performed to check vital signs and scale pain (1-10) every visit. {add_special_conditions(o2_flag, diabetec_flag)}SN to evaluate therapeutic response to current/new medications and compliance to medication/diet regimen, home safety issues and psychosocial adjustment. [Include a detailed disease summary of approximately 150–200 words that covers the disease’s causes, symptoms, diagnostic findings, and additional relevant clinical details]. SN advised Patient/PCG to take medication [insert medication] as ordered by MD."
+          "text2": "SN admitted the patient for comprehensive skilled nursing assessment, observation and evaluation of all body systems. SN to assess vital signs, pain level. SN performed to check vital signs and scale pain (1-10) every visit. {add_special_conditions(o2_flag, diabetec_flag)} SN to evaluate therapeutic response to current/new medications and compliance to medication/diet regimen, home safety issues and psychosocial adjustment. [Include a detailed disease summary of approximately 150–200 words that covers the disease’s causes, symptoms, diagnostic findings, and additional relevant clinical details]. SN advised Patient/PCG to take medication [insert medication] as ordered by MD."
         }}
         ```
         📌 **GUIDELINES:**
