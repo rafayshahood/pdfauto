@@ -69,6 +69,7 @@ def complete_form():
             tmp_file_path = tmp_file.name
 
         extraction_result = extractionMain(tmp_file_path)
+
         # extraction_result = {
         #                     "patientDetails": {
         #                         "medicalRecordNo": "000000022-001",
@@ -109,8 +110,9 @@ def complete_form():
             "appointment_times": formatted_times,
             "extraction_results": extraction_result,
         }
+    
         shared_data.data = submission_data
         # Redirect to the disease analysis page.
-        # st.session_state["page"] = "disease"
+        # st.session_state["page"] = "doc"
         st.session_state["page"] = "disease_analysis"
         st.rerun()  # Force the app to rerun so that app.py detects the new page state.

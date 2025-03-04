@@ -5,6 +5,58 @@ from datetime import datetime
 from filling.adjustDates import adjust_dates
 from filling.randomValGen import getRangeValuesArray
 from filling.docProcessing import process_document_full
+import zipfile
+import io
+from docx import Document
+import json
+
+def remove_brackets(text):
+    """
+    Removes all square brackets [ ] from the given text.
+    """
+    return text.replace("[", "").replace("]", "")
+
+def add_special_conditions(o2_flag, diabetec_flag):
+    """
+    Returns the additional condition-specific text if applicable.
+    """
+    condition_text = ""
+    
+    if o2_flag:
+        condition_text += "Check O₂ saturation level with signs and symptoms of respiratory distress. "
+    
+    if diabetec_flag:
+        condition_text += "SN to record blood sugar test results checked by Pt/PCG during the visits and report any significant changes to MD. SN to perform diabetic foot exam upon every visit. PCG assumes DM responsibilities, is confident, capable, and competent in checking blood sugar daily. "
+    
+    return condition_text
+
+def modify_text2_with_conditions(text2, o2_flag, diabetec_flag):
+    """
+    Inserts O₂ and Diabetes-related sentences into text2 at the correct location.
+    """
+    target_lines = (
+        "SN admitted the patient for comprehensive skilled nursing assessment, observation and evaluation of all body systems. "
+        "SN to assess vital signs, pain level. SN performed to check vital signs and scale pain (1-10) every visit."
+    )
+
+    special_conditions_text = []
+    if o2_flag:
+        special_conditions_text.append("Check O₂ saturation level with signs and symptoms of respiratory distress.")
+    if diabetec_flag:
+        special_conditions_text.append(
+            "SN to record blood sugar test results checked by Pt/PCG during the visits and report any significant changes to MD. "
+            "SN to perform diabetic foot exam upon every visit. PCG assumes DM responsibilities, is confident, capable, and competent in checking blood sugar daily."
+        )
+
+    if special_conditions_text:
+        conditions_text = " ".join(special_conditions_text)
+        if target_lines in text2:
+            text2 = text2.replace(target_lines, target_lines + " " + conditions_text, 1)
+        else:
+            text2 = conditions_text + " " + text2  # Fallback if target line is missing
+
+    return text2
+
 # --------------------------
 # (Make sure that extractedResults, mainContResponse, and other external variables are defined.)
 def fillDoc():
@@ -13,23 +65,41 @@ def fillDoc():
     constipation = extractedResults['diagnosis']['constipated']
     sn_name = shared_data.data['sn_name']
     appointment_dates = shared_data.data['appointment_dates']
-    # Convert raw appointment dates from "DD/MM/YYYY" to "MM/DD/YY"
-    # appointment_dates = [
-    #     datetime.strptime(date_str, "%d/%m/%Y").strftime("%m/%d/%y")
-    #     for date_str in raw_appointment_dates
-    # ]
     oxygenFlag = extractedResults['diagnosis']['oxygen']
-
-    print(appointment_dates)
+    dm2_value =  extractedResults['diagnosis']['diabetec']
+    # print(appointment_dates)
     appointment_times = shared_data.data['appointment_times']
-    print(appointment_times)
+    # print(appointment_times)
 
     dischargeLastPage = {'text1': """Upon today’s assessment patient's condition is stable, vital signs remain stable recently. Patient/PCG monitored with discharge instruction.""",
-                         'text2': """SN admitted the patient for comprehensive skilled nursing assessment, observation and evaluation of all body systems. SN to assess vital signs, pain level. SN performed to check vital signs and scale pain (1-10) every visit. SN to evaluate therapeutic response to current/new medications and compliance to medication/diet regimen, home safety issues and psychosocial adjustment. SN informed Patient/PCG regarding possible discharge from services next visit. Patient/ PCG instructed re medication regimen -take all prescribed medications as ordered; if a dose is skipped never take double dose; do not stop taking medicine abruptly, keep your medicine in original container. Instructions are: measures to increase activity tolerance -use energy saving techniques, rest frequently during an activity, schedule an activity when most tolerated-after rest periods, after pain meds, at least one hour after meals; put most frequently used items within easy reach; eat a well-balanced diet; set realistic goals.""",
+                         'text2': """SN admitted the patient for comprehensive skilled nursing assessment, observation and evaluation of all body systems. SN to assess vital signs, pain level. SN performed to check vital signs and scale pain (1-10) every visit. """ + add_special_conditions(oxygenFlag, dm2_value) + """SN to evaluate therapeutic response to current/new medications and compliance to medication/diet regimen, home safety issues and psychosocial adjustment. SN informed Patient/PCG regarding possible discharge from services next visit. Patient/ PCG instructed re medication regimen -take all prescribed medications as ordered; if a dose is skipped never take double dose; do not stop taking medicine abruptly, keep your medicine in original container. Instructions are: measures to increase activity tolerance -use energy saving techniques, rest frequently during an activity, schedule an activity when most tolerated-after rest periods, after pain meds, at least one hour after meals; put most frequently used items within easy reach; eat a well-balanced diet; set realistic goals.""",
                          }
 
     # For the dynamic replacement, assume mainContResponse is defined.
     mainContResponse = shared_data.mainContResponse
+
+        # Modify text2 for all pages in mainContResponse
+    for page_key in mainContResponse:
+        response_data = json.loads(mainContResponse[page_key])
+        response_data["text2"] = modify_text2_with_conditions(response_data["text2"], oxygenFlag, dm2_value)
+        mainContResponse[page_key] = json.dumps(response_data)
+
+
+    for page_key in mainContResponse:
+        response_data = json.loads(mainContResponse[page_key])  # Parse JSON
+
+        # Remove brackets from text1 and text2
+        response_data["text1"] = remove_brackets(response_data["text1"])
+        response_data["text2"] = remove_brackets(response_data["text2"])
+
+        # Save back the cleaned data
+        mainContResponse[page_key] = json.dumps(response_data)
+
+
+    # Update shared_data with cleaned response
+    shared_data.mainContResponse = mainContResponse
+
+    # Run the function to clean the mainContResponse
 #     mainContResponse = {
 #     "page1": "{\n  \"text1\": \"Altered status due to Type 2 diabetes mellitus. Knowledge deficit regarding measures to control Type 2 diabetes mellitus and the medication Janumet 50-500 mg as ordered by MD.\",\n  \n  \"text2\": \"SN admitted the patient for comprehensive skilled nursing assessment, observation and evaluation of all body systems. SN to assess vital signs, pain level. SN performed to check vital signs and scale pain (1-10) every visit. SN to record blood sugar test results checked by Pt/PCG during the visits and report any significant changes to MD. SN to perform diabetic foot exam upon every visit. PCG assumes DM responsibilities, is confident, capable, and competent in checking blood sugar daily. SN to evaluate therapeutic response to current/new medications and compliance to medication/diet regimen, home safety issues and psychosocial adjustment. [rest of the info]. SN advised Patient/PCG to take medication Janumet 50-500 mg as ordered by MD.\"\n}",
 #     "page2": "{\n  \"text1\": \"no disease found in database\",\n  \"text2\": \"no disease found in database\"\n}",
@@ -67,18 +137,21 @@ def fillDoc():
 
     tempArray, hrArray, rrArray, oxygenArray, bsFastArray, bsRapidArray, random_bpArray = getRangeValuesArray(valuesToGet)
 
-    if extractedResults['extraDetails']['can'] == True and extractedResults['extraDetails']['walker'] == True:
+    if extractedResults['extraDetails']['can'] == "true" and extractedResults['extraDetails']['walker'] == "true":
         canWalkerText = 'can, walker'
-    elif extractedResults['extraDetails']['can'] == True and extractedResults['extraDetails']['walker'] == False:
+    elif extractedResults['extraDetails']['can'] == "true" and extractedResults['extraDetails']['walker'] == "false":
         canWalkerText = 'can'
-    elif extractedResults['extraDetails']['can'] == False and extractedResults['extraDetails']['walker'] == True:
+    elif extractedResults['extraDetails']['can'] == "false" and extractedResults['extraDetails']['walker'] == "false":
         canWalkerText = 'walker'
     else:
         canWalkerText = ''
 
-    painScaleArray = ['5/10', '4/10', '4/10', '4/10', '4/10', '3/10', '3/10', '3/10', '2/10']
+    painScaleArray = ['5/10', '4/10', '4/10', '4/10', '4/10', '3/10', '3/10', '3/10']
 
     if getAction == "Discharge":
+        painScaleArray.append('3/10')
+        painScaleArray.append('2/10')
+    if getAction == "Reset":
         painScaleArray.append('4/10')
 
     output_files = []
@@ -124,9 +197,8 @@ def fillDoc():
 
         }
 
-        dm2_value =  extractedResults['diagnosis']['diabetec']
         depressed_value = extractedResults['diagnosis']['depression']
-        allSafetyMeasures = extractedResults['extraDetails']['safetyMeasures'] + ","  + extractedResults['extraDetails']['safetyMeasuresCont']
+        allSafetyMeasures = extractedResults['extraDetails']['safetyMeasures']
         edemaResults = extractedResults['extraDetails']['edema']
 
     
@@ -136,23 +208,65 @@ def fillDoc():
         )
         output_files.append(out_file)
 
-    for file in output_files:
-        with open(file, "rb") as doc_file:
-            st.download_button(
-                label=f"Download {file}",
-                data=doc_file,
-                file_name=file,
-                mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-            )
-    # # Process the document and get the output filename.
-    # output_file = process_document_full(wordFileName, headerPage, replacements_first_col, replacements_second_col, 
-    #                                     allSafetyMeasures, dm2_value, edemaResults, depressed_value)
+            # Create an in-memory ZIP file
+    zip_buffer = io.BytesIO()
 
-    # # Provide a download button using Streamlit.
-    # with open(output_file, "rb") as doc_file:
-    #     st.download_button(
-    #         label="Download Modified Document",
-    #         data=doc_file,
-    #         file_name=output_file,
-    #         mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-    #     )
+    with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zipf:
+        for file in output_files:
+            zipf.write(file, arcname=file)  # Add each file to the ZIP
+
+    # Move to the beginning of the buffer
+    zip_buffer.seek(0)
+
+    # Provide a single download button for the ZIP file
+    st.download_button(
+        label="Download All Notes",
+        data=zip_buffer,
+        file_name="all_notes.zip",
+        mime="application/zip"
+    )
+
+
+
+    def merge_word_documents(doc_files):
+        """
+        Merges multiple Word documents while preserving layout, styles, and formatting,
+        ensuring that extra blank pages do not appear.
+
+        Parameters:
+        - doc_files (list): List of paths to .docx files to be merged.
+
+        Returns:
+        - io.BytesIO: In-memory file object of the merged document.
+        """
+        # Load the first document as the base
+        merged_doc = Document(doc_files[0])
+
+        for file in doc_files[1:]:
+            doc = Document(file)
+
+            # Ensure proper spacing and avoid unwanted blank pages
+            if merged_doc.paragraphs[-1].text.strip():  # If last paragraph has text, add a page break
+                merged_doc.add_page_break()
+
+            # Append content while preserving structure
+            for element in doc.element.body:
+                merged_doc.element.body.append(element)
+
+        # Save the merged document to a BytesIO buffer
+        merged_buffer = io.BytesIO()
+        merged_doc.save(merged_buffer)
+        merged_buffer.seek(0)
+        
+        return merged_buffer
+
+    # Merge all generated documents
+    merged_buffer = merge_word_documents(output_files)
+
+    # Provide a download button for the merged document
+    st.download_button(
+        label="Download Merged Document",
+        data=merged_buffer,
+        file_name="merged_notes.docx",
+        mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    )

@@ -11,6 +11,24 @@ from dotenv import load_dotenv
 load_dotenv() 
 extractionResults = []  # global variable available throughout the notebook
 
+def count_occurrences_of_flags(words_to_count,text):
+    text_lower = text.lower()  # Convert text to lowercase for case-insensitive matching
+    total_count = sum(text_lower.count(word) for word in words_to_count)
+    return total_count
+
+def getFlags(ex_txt):
+    # Example usage:
+    depression_check = ["depressed", "depression"]
+    depression_flag = False
+
+    count = count_occurrences_of_flags(depression_check, ex_txt)
+    if count > 1:
+        depression_flag = True
+
+    print(f"Total occurrences of depression: {count}")
+
+    return depression_flag
+
 class PatientDetails(BaseModel):
     # medical record no.
     medicalRecordNo: str = Field(description="Medical Record No. of the individual")
@@ -22,7 +40,7 @@ class PatientDetails(BaseModel):
     # principal diagnosis
     principalDiagnosis: str = Field(description="principal diagnosis of the patient?")
     # all other pertinant diagnosis
-    pertinentdiagnosis: str = Field(description="13. Other Pertinant Diagnosis of the individual. Separate each disease with a --")
+    pertinentdiagnosis: str = Field(description="Other Pertinant Diagnosis of the individual. This section contains disease e.g I11.9 Hypertensive heart disease with. I11.9 is code, do not include this in the output only the disease name e.g Hypertensive heart disease with Only include . Separate each disease with a --")
 
     
 class Diagnosis(BaseModel):
@@ -33,7 +51,7 @@ class Diagnosis(BaseModel):
     # pain areas
     painIn: str = Field(description="Pain in which places of the patient")
     # depression check
-    depression: bool = Field(description="In section 19. Mental Status, Whether the individual is depressed or not?")
+    # depression: bool = Field(description="In section 19. Mental Status, Whether the individual is depressed or not?")
     # diabetec
     diabetec: bool = Field(description="Does the patient suffer from Diabetes Mellitus Type 2?")
     # oxygen val
@@ -46,9 +64,10 @@ class Medications(BaseModel):
 
 class ExtraDetails(BaseModel):
     # safety measures
-    safetyMeasures: str = Field(description="15. Safety Measures")
+    safetyMeasures: str = Field(description="Copy Paste 15. Safety Measures and 15. Safety Measures continued  from page 1, 2,3 and 4 only. Do not take any from other pages, do not add anything from your own.Separate Each with ,")
+    # safetyMeasures: str = Field(description="15. Safety Measures")
     # safety measures
-    safetyMeasuresCont: str = Field(description="15. Safety Measures continued")
+    # safetyMeasuresCont: str = Field(description="15. Safety Measures continued")
     #  all nurtitional requirements
     nutritionalReq: str = Field(description="16. Nutritional Requirements")
     #  all nurtitional cont requirements
@@ -56,8 +75,8 @@ class ExtraDetails(BaseModel):
     # edema info
     edema: str = Field(description="Edema Management") 
     # cane walker check
-    can: bool = Field(description="Whether the individual has cane in 18.B. Activites Permitted?")
-    walker: bool = Field(description="Whether the individual has walker in 18.B. Activites Permitted?")
+    # can: bool = Field(description="Whether the individual has cane in 18.B. Activites Permitted?")
+    # walker: bool = Field(description="Whether the individual has walker in 18.B. Activites Permitted?")
 
     
 
@@ -70,6 +89,7 @@ class Form485(BaseModel):
 def error_exit(error_message):
     print(error_message)
     sys.exit(1)
+
 
 
 def process_485_information(extracted_text):
@@ -93,7 +113,10 @@ def process_485_information(extracted_text):
 
 
 def extract_text_from_pdf(file_path, pages_list=None):
-    llmw = LLMWhispererClientV2()
+    # llmw = LLMWhispererClientV2()
+    llmw = LLMWhispererClientV2(api_key = "E7-04ANPqQcYji7GNea0YHorP_-thMKC50BLRvwonrI")
+
+    
     try:
         result = llmw.whisper(
             file_path=file_path, 
@@ -120,6 +143,7 @@ def process_485_pdf(file_path, pages_list=None):
     # If extractionResults is already a dict, you can use it directly.
     if isinstance(extractionResults, dict):
         extractionResults = extractionResults
+
     else:
         # Remove markdown formatting if present
         json_string = extractionResults
@@ -130,7 +154,17 @@ def process_485_pdf(file_path, pages_list=None):
         except json.JSONDecodeError as e:
             error_exit(f"Error decoding JSON: {e}")
 
+    extractionResults['diagnosis']['depression'] = getFlags(extracted_text)
+    # Extract safety measures (handling case sensitivity)
+    safety_measures = extractionResults["extraDetails"].get("safetyMeasures", "").lower()
+
+    # Set flags based on presence
+    extractionResults["extraDetails"]["can"] = "true" if "cane" in safety_measures else "false"
+    extractionResults["extraDetails"]["walker"] = "true" if "walker" in safety_measures else "false"
+    
     return extractionResults
+
+
 
 
 def main(filepath):

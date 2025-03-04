@@ -124,12 +124,21 @@ def process_diseases():
             if f"replacement_disease_{page}" not in st.session_state:
                 st.session_state[f"replacement_disease_{page}"] = next_valid_disease if next_valid_disease else original_disease
 
-            # --- Input box for new replacement disease ---
+            # Ensure retry_disease is always initialized
+            retry_disease = st.session_state.get(f"replacement_disease_{page}", "").strip()
+
+            # Provide input field for user modification
             retry_disease = st.text_input(
                 f"Enter new disease for {page}", 
-                st.session_state[f"replacement_disease_{page}"], 
+                retry_disease, 
                 key=f"retry_disease_{page}"
             )
+            # # --- Input box for new replacement disease ---
+            # retry_disease = st.text_input(
+            #     f"Enter new disease for {page}", 
+            #     st.session_state[f"replacement_disease_{page}"], 
+            #     key=f"retry_disease_{page}"
+            # )
 
             col1, col2, col3, col4 = st.columns(4)
             with col1:
@@ -189,14 +198,9 @@ def process_diseases():
 
             retry_med = st.text_input(f"Enter new medication for {page}", "", key=f"retry_med_{page}")
 
-            col1, col2, col3, col4 = st.columns(4)
-            with col1:
-                if st.button(f"✔️ Retry with {retry_med}", key=f"retry_med_btn_{page}"):
-                    with st.spinner(f"Updating medication..."):
-                        st.session_state["mainContResponse"][page] = json.dumps({"text1": retry_med, "text2": retry_med})
-                    st.rerun()
+            col1, col2 = st.columns(2)
 
-            with col2:
+            with col1:
                 if st.button(f"🌐 Ask GPT for {disease_name}", key=f"gpt_med_{page}"):
                     with st.spinner(f"Fetching medication for {disease_name}..."):
                         gpt_result = fetch_info_from_gpt(client, "medication", disease_name)
@@ -204,20 +208,20 @@ def process_diseases():
                             st.session_state["mainContResponse"][page] = json.dumps(gpt_result)
                     st.rerun()
 
-            with col3:
-                if st.button(f"🌐 Ask GPT for {retry_disease}", key=f"gpt_med_{page}"):
-                    with st.spinner(f"Fetching data for {retry_disease}..."):
-                        # Ensure GPT response is correctly parsed as JSON
-                        gpt_result = fetch_info_from_gpt(client, "disease", retry_disease)
-                        if gpt_result:
-                            try:
-                                parsed_response = json.loads(gpt_result) if isinstance(gpt_result, str) else gpt_result
-                                st.session_state["mainContResponse"][page] = json.dumps(parsed_response)
-                            except json.JSONDecodeError:
-                                st.error("Error processing GPT response. Please try again.")
-                    st.rerun()
+            # with col3:
+            #     if st.button(f"🌐 Ask GPT for {retry_disease}", key=f"gpt_med_{page}"):
+            #         with st.spinner(f"Fetching data for {retry_disease}..."):
+            #             # Ensure GPT response is correctly parsed as JSON
+            #             gpt_result = fetch_info_from_gpt(client, "disease", retry_disease)
+            #             if gpt_result:
+            #                 try:
+            #                     parsed_response = json.loads(gpt_result) if isinstance(gpt_result, str) else gpt_result
+            #                     st.session_state["mainContResponse"][page] = json.dumps(parsed_response)
+            #                 except json.JSONDecodeError:
+            #                     st.error("Error processing GPT response. Please try again.")
+            #         st.rerun()
 
-            with col4:
+            with col2:
                 if st.button(f"❌ Skip {page}", key=f"skip_med_{page}"):
                     with st.spinner(f"Skipping medication for {disease_name}..."):
                         st.session_state["skipped_pages"].add(page)  # Store skipped page

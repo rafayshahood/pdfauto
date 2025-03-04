@@ -1,6 +1,10 @@
 import re
 from docx import Document
 
+# LLMWHISPERER_API_KEY="qp6bhMbY3EmpaQqNU2KObHX8fMixMSp0nGcf8GyNnNc"
+# LLMWHISPERER_API_KEY="8S_vXzGY7lwCIi0CrUPEGyPojbZu_sxkr7tjG6DqkLg"
+# LLMWHISPERER_API_KEY="Z_OCRxI2NjZC3EdpoB5aAWNbHKiaHzE3qO6ll1Z37Vc"
+
 
 def process_cell(cell, replacement_dict, dynamic_counters):
     """
@@ -76,50 +80,85 @@ def process_document_full(file_path, newHeader, replacement1, replacement2,
             process_cell(cell, replacement2, dynamic_counters2)
                                 
     
-    # Convert the safety measures string into a list of lower-case items
-    measures = [s.strip().lower() for s in allSafetyMeasures.split(",")]
+    # # Convert the safety measures string into a list of lower-case items
+    # measures = [s.strip().lower() for s in allSafetyMeasures.split(",")]
+    # Split the safety measures string into a list and trim whitespace.
+    measures = [m.strip() for m in allSafetyMeasures.split(",") if m.strip()]
     
-    # Mapping from document label to the keyword(s) we expect in the safety measures.
-    safety_measures_mapping = {
-        "Bleeding Precautions": "bleeding precautions",
-        "Fall Precautions": "fall precautions",
-        "Clear pathways": "clear pathways",
-        "Infection control measures": "infection control",
-        "Cane, walker Precautions": ("cane", "walker"),
-        "Universal Precautions": "universal precautions",
-        "Other:911 protocols": "911 protocol"
-    }
-    # --- First Pass: Uncheck all target checkboxes ---
+    # Convert measures to lowercase for checking.
+    lower_measures = [m.lower() for m in measures]
+    
+    # Determine if "cane" and/or "walker" appear in any measure.
+    cane_present = any("cane" in m for m in lower_measures)
+    walker_present = any("walker" in m for m in lower_measures)
+
+        # Create a new list that excludes any measure that mentions "cane" or "walker".
+    filtered_measures = [m for m in measures if "cane" not in m.lower() and "walker" not in m.lower()]
+    
+    # If either cane or walker is present, add a combined measure.
+    if cane_present and walker_present:
+        filtered_measures.append("Cane, walker Precautions")
+    elif cane_present:
+        filtered_measures.append("Cane")
+    elif walker_present:
+        filtered_measures.append("Walker")
+    
+    # Build the replacement string: prefix each measure with "☒" and join them with a space.
+    replacement_str = " ".join(["☒" + measure for measure in filtered_measures])
+    
+    # Define the placeholder text in the document. Adjust it if needed.
+    placeholder = "Fall Precautions to be replaced"
+    
+    # Iterate over all runs in all tables and replace the placeholder if found.
     for table in doc.tables:
         for row in table.rows:
             for cell in row.cells:
                 for paragraph in cell.paragraphs:
                     for run in paragraph.runs:
-                        for label in safety_measures_mapping.keys():
-                            if label in run.text:
-                                pattern = r"(☒|☐)(" + re.escape(label) + r")"
-                                replacement = r"☐\2"
-    # --- Second Pass: Check individual checkboxes if needed ---
-    for table in doc.tables:
-        for row in table.rows:
-            for cell in row.cells:
-                for paragraph in cell.paragraphs:
-                    for run in paragraph.runs:
-                        for label, expected in safety_measures_mapping.items():
-                            if label in run.text:
-                                should_check = False
-                                if isinstance(expected, tuple):
-                                    for item in expected:
-                                        if any(item in m or m in item for m in measures):
-                                            should_check = True
-                                            break
-                                else:
-                                    if any(expected in m or m in expected for m in measures):
-                                        should_check = True
+                        if placeholder in run.text:
+                            run.text = run.text.replace(placeholder, replacement_str)
+
+    # # Mapping from document label to the keyword(s) we expect in the safety measures.
+    # safety_measures_mapping = {
+    #     "Bleeding Precautions": "bleeding precautions",
+    #     "Fall Precautions": "fall precautions",
+    #     "Clear pathways": "clear pathways",
+    #     "Infection control measures": "infection control",
+    #     "Cane, walker Precautions": ("cane", "walker"),
+    #     "Universal Precautions": "universal precautions",
+    #     "Other:911 protocols": "911 protocol"
+    # }
+    # # --- First Pass: Uncheck all target checkboxes ---
+    # for table in doc.tables:
+    #     for row in table.rows:
+    #         for cell in row.cells:
+    #             for paragraph in cell.paragraphs:
+    #                 for run in paragraph.runs:
+    #                     for label in safety_measures_mapping.keys():
+    #                         if label in run.text:
+    #                             pattern = r"(☒|☐)(" + re.escape(label) + r")"
+    #                             replacement = r"☐\2"
+    # # --- Second Pass: Check individual checkboxes if needed ---
+    # for table in doc.tables:
+    #     for row in table.rows:
+    #         for cell in row.cells:
+    #             for paragraph in cell.paragraphs:
+    #                 for run in paragraph.runs:
+    #                     for label, expected in safety_measures_mapping.items():
+    #                         if label in run.text:
+    #                             should_check = False
+    #                             if isinstance(expected, tuple):
+    #                                 for item in expected:
+    #                                     if any(item in m or m in item for m in measures):
+    #                                         should_check = True
+    #                                         break
+    #                             else:
+    #                                 if any(expected in m or m in expected for m in measures):
+    #                                     should_check = True
                                 
-                                pattern = r"(☒|☐)(" + re.escape(label) + r")"
-                                replacement = r"☒\2" if should_check else r"☐\2"
-                                run.text = re.sub(pattern, replacement, run.text)
+    #                             pattern = r"(☒|☐)(" + re.escape(label) + r")"
+    #                             replacement = r"☒\2" if should_check else r"☐\2"
+    #                             run.text = re.sub(pattern, replacement, run.text)
     
     # 4. DM II Checkbox Update.
     for table in doc.tables:
@@ -205,3 +244,5 @@ def process_document_full(file_path, newHeader, replacement1, replacement2,
     output_file = f"page{iteration_index+1}.docx"
     doc.save(output_file)
     return output_file
+
+
