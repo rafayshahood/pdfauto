@@ -9,7 +9,7 @@ import zipfile
 import io
 from docx import Document
 import json
-
+import random
 def remove_brackets(text):
     """
     Removes all square brackets [ ] from the given text.
@@ -137,6 +137,8 @@ def fillDoc():
 
     tempArray, hrArray, rrArray, oxygenArray, bsFastArray, bsRapidArray, random_bpArray = getRangeValuesArray(valuesToGet)
 
+
+
     if extractedResults['extraDetails']['can'] == "true" and extractedResults['extraDetails']['walker'] == "true":
         canWalkerText = 'can, walker'
     elif extractedResults['extraDetails']['can'] == "true" and extractedResults['extraDetails']['walker'] == "false":
@@ -157,15 +159,25 @@ def fillDoc():
     output_files = []
     for i in range(valuesToGet):
         headerPage = extractedResults['patientDetails']['providerName']
+        check_f=False
+        check_r=False
 
         # Extract the starting time from the appointment time string
         time_str = appointment_times[i]
         start_time_str = time_str.split('-')[0].strip() if '-' in time_str else time_str.strip()
 
+        if getAction == "Reset" and i == 8:
+            bsFastArray[i] = str(int(bsFastArray[i-1]) + random.randint(4, 8))
+            bsRapidArray[i] = str(int(bsRapidArray[i-1]) + random.randint(4, 8))
+
         if datetime.strptime(start_time_str, "%H:%M") < datetime.strptime("10:00", "%H:%M"):
             bsValue = bsFastArray[i]
+            check_f=True
         else:
             bsValue = bsRapidArray[i]
+            check_r=True
+
+
 
         replacements_first_col = {
             'cane, walker': canWalkerText,
@@ -200,11 +212,13 @@ def fillDoc():
         depressed_value = extractedResults['diagnosis']['depression']
         allSafetyMeasures = extractedResults['extraDetails']['safetyMeasures']
         edemaResults = extractedResults['extraDetails']['edema']
+        check_vertigo = extractedResults['extraDetails']['vertigo']
 
     
         out_file = process_document_full(
             wordFileName, headerPage, replacements_first_col, replacements_second_col,
-            allSafetyMeasures, dm2_value, edemaResults, depressed_value, i, getAction, valuesToGet
+            allSafetyMeasures, dm2_value, edemaResults, depressed_value, i, getAction, valuesToGet, check_vertigo, 
+            check_f, check_r
         )
         output_files.append(out_file)
 
@@ -270,3 +284,5 @@ def fillDoc():
         file_name="merged_notes.docx",
         mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
     )
+
+    st.warning(f"⚠️ Some medication places were left blank: {shared_data.gpt2_used_pages}")

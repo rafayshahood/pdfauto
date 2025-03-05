@@ -37,7 +37,7 @@ def process_cell(cell, replacement_dict, dynamic_counters):
 # Process document function.
 def process_document_full(file_path, newHeader, replacement1, replacement2, 
                           allSafetyMeasures, dm2_value, edemaResults, depressed_value, 
-                          iteration_index, action, total_pages):
+                          iteration_index, action, total_pages, check_vertigo=False, check_f=False, check_r=False):
     """
     Processes the Word document and performs the following tasks:
       1. Header text replacement.
@@ -239,6 +239,38 @@ def process_document_full(file_path, newHeader, replacement1, replacement2,
                     for run in paragraph.runs:
                         if target_text in run.text:
                             run.text = run.text.replace(target_text, replacement_text)
+
+        # Determine correct checkbox symbol based on user input
+    vertigo_checkbox = "☒Vertigo" if check_vertigo else "☐Vertigo"  # Checked or Unchecked "Vertigo"
+
+    for table in doc.tables:
+        for row in table.rows:
+            for cell in row.cells:
+                for paragraph in cell.paragraphs:
+                    for run in paragraph.runs:
+                        text = run.text
+
+                        # Update the Vertigo checkbox
+                        text = text.replace("☒Vertigo", "☐Vertigo").replace("☐Vertigo", vertigo_checkbox)
+
+                        run.text = text  # Apply updated text
+
+        # Determine correct checkbox symbols based on user input
+    f_checkbox = "☒ R" if check_f else "☐ R"  # Checked or Unchecked "F"
+    r_checkbox = "☒ Repeat" if check_r else "☐ Repeat"  # Checked or Unchecked "R"
+
+    for table in doc.tables:
+        for row in table.rows:
+            for cell in row.cells:
+                for paragraph in cell.paragraphs:
+                    for run in paragraph.runs:
+                        text = run.text
+
+                        # Update checkboxes dynamically
+                        text = text.replace("☒ R", "☐ R").replace("☐ R", f_checkbox)  # Set "F"
+                        text = text.replace("☒ Repeat", "☐ Repeat").replace("☐ Repeat", r_checkbox)  # Set "R"
+
+                        run.text = text  # Apply updated text
     
     # Save the modified document with a name based on iteration (e.g., "page1.docx", "page2.docx", etc.)
     output_file = f"page{iteration_index+1}.docx"

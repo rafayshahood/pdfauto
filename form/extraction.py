@@ -16,18 +16,17 @@ def count_occurrences_of_flags(words_to_count,text):
     total_count = sum(text_lower.count(word) for word in words_to_count)
     return total_count
 
-def getFlags(ex_txt):
+def getFlags(ex_txt, check_words, wordCount = 0):
     # Example usage:
-    depression_check = ["depressed", "depression"]
-    depression_flag = False
+    flag = False
 
-    count = count_occurrences_of_flags(depression_check, ex_txt)
-    if count > 1:
-        depression_flag = True
+    count = count_occurrences_of_flags(check_words, ex_txt)
+    if count > wordCount:
+        flag = True
 
-    print(f"Total occurrences of depression: {count}")
+    print(f"Total occurrences of {check_words}: {count}")
 
-    return depression_flag
+    return flag
 
 class PatientDetails(BaseModel):
     # medical record no.
@@ -47,7 +46,7 @@ class Diagnosis(BaseModel):
     # all other pertinant diagnosis cont
     pertinentdiagnosisCont: str = Field(description="Other Pertinent Diagnoses continued. Separate each disease with a --")
     # constipation check
-    constipated: str = Field(description="in section MEDICAL SUMMARY / NECESSITY tell whether the patient is constipated or not")
+    constipated: bool = Field(description="in section MEDICAL SUMMARY / NECESSITY tell whether the patient is constipated or not")
     # pain areas
     painIn: str = Field(description="Pain in which places of the patient")
     # depression check
@@ -114,7 +113,7 @@ def process_485_information(extracted_text):
 
 def extract_text_from_pdf(file_path, pages_list=None):
     # llmw = LLMWhispererClientV2()
-    llmw = LLMWhispererClientV2()
+    llmw = LLMWhispererClientV2(api_key = "E7-04ANPqQcYji7GNea0YHorP_-thMKC50BLRvwonrI")
 
     
     try:
@@ -154,7 +153,8 @@ def process_485_pdf(file_path, pages_list=None):
         except json.JSONDecodeError as e:
             error_exit(f"Error decoding JSON: {e}")
 
-    extractionResults['diagnosis']['depression'] = getFlags(extracted_text)
+    extractionResults['diagnosis']['depression'] = getFlags(extracted_text, ["depressed", "depression"],1)
+    extractionResults['extraDetails']['vertigo'] = getFlags(extracted_text, ["Vertigo", "vertigo"], 0)
     # Extract safety measures (handling case sensitivity)
     safety_measures = extractionResults["extraDetails"].get("safetyMeasures", "").lower()
 

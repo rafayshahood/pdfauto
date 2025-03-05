@@ -76,7 +76,7 @@ def complete_form():
         #                         "name": "Pork, Johnvi",
         #                         "providerName": "Mint Home Health Care Inc.",
         #                         "principalDiagnosis": "diabetes mellitus with",
-        #                         "pertinentdiagnosis": "Acute diastolic (congestive) heart failure -- Hyp hrt & chr kdny dis w hrt f: -- Chronic kidney disease, unspec: -- Athscl heart disease of native -- Other disorders of lung -- Paroxysmal atrial fibrillation"
+        #                         "pertinentdiagnosis": "Acute diastolic (congestive) heart failure -- Hyp hrt & chr kdny dis w hrt f: -- fd -- Athscl heart disease of native -- Other disorders of lung -- Paroxysmal atrial fibrillation"
         #                     },
         #                     "diagnosis": {
         #                         "pertinentdiagnosisCont": "Hypothyroidism, unspecified -- Mixed hyperlipidemia -- Old myocardial infarction -- Hypokalemia -- Gastro-esophageal reflux disease without esophagitis -- Hypomagnesemia -- Age-related cognitive decline -- Primary generalized (osteo) arthritis -- Vitamin D deficiency, unspecified -- Idiopathic gout, multiple sites -- Age-related osteoporosis w/o current pathological fracture -- Weakness -- Long term (current) use of anticoagulants -- Dependence on supplemental oxygen",
@@ -97,7 +97,8 @@ def complete_form():
         #                         "nutritionalReqCont": "Dash",
         #                         "edema": "None",
         #                         "can": False,
-        #                         "walker": False
+        #                         "walker": False,
+        #                         "vertigo": True
         #                     }
                             
         #                     }

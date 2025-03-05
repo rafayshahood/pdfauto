@@ -3,8 +3,9 @@ import json
 import openai
 from dotenv import load_dotenv
 import data.shared_data as shared_data
-from diseasEng.helperFunctions import fetch_info_from_gpt, wait_for_run_completion
+from diseasEng.helperFunctions import fetch_info_from_gpt, wait_for_run_completion, fetch_info_from_gpt2
 import time
+from fuzzywuzzy import process  # Import fuzzy string matching
 
 # Load environment variables
 load_dotenv()
@@ -30,8 +31,19 @@ assistant_id = "asst_ugMOPS8hWwcUBYlT95sfJPXb"
 #     }
 # }
 
+def find_closest_medication(med_name, med_list, threshold=80):
+    """
+    Finds the closest matching medication name in the provided medication list using fuzzy matching.
+    If a match is found above the threshold, return it; otherwise, return None.
+    """
+    if not med_list:
+        return None  # No available medications to match
 
+    best_match, score = process.extractOne(med_name.lower(), med_list)
+    
+    return best_match if score >= threshold else None  # Only return if similarity is high
 def process_diseases():
+    # gpt2_used_pages = []  # ✅ Track pages where we used GPT2 due to empty medication list
     extractedResults = shared_data.data['extraction_results']
 
     # Extract diseases
@@ -45,6 +57,7 @@ def process_diseases():
         med.strip().split(",")[0].lower()  # Extract medication name (before dosage)
         for med in extractedResults["medications"]["medications"].split(";")  # Splitting by semicolon
     )
+    
 
     diabetec_flag = extractedResults['diagnosis']['diabetec']
     oxygen_flag = extractedResults['diagnosis']['oxygen']
@@ -66,8 +79,26 @@ def process_diseases():
         progress_bar = st.progress(0)
 
         for i, disease_name in enumerate(diseasesArray):
-            response = wait_for_run_completion(client, assistant_id, disease_name, provided_medications, o2=oxygen_flag, diabetec=diabetec_flag)
-            st.session_state["mainContResponse"][f"page{i + 1}"] = response
+            if provided_medications:  # ✅ Use OpenAI Assistant if medications exist
+                response = wait_for_run_completion(client, assistant_id, disease_name, provided_medications, o2=oxygen_flag, diabetec=diabetec_flag)
+            else:  # ✅ Use GPT if no medications exist
+                response = fetch_info_from_gpt2(client, disease_name)
+                shared_data.gpt2_used_pages.append(i + 1)  # ✅ Store page number
+
+            # response = wait_for_run_completion(client, assistant_id, disease_name, provided_medications, o2=oxygen_flag, diabetec=diabetec_flag)
+            response_json = json.loads(response) if isinstance(response, str) else response
+            st.session_state["mainContResponse"][f"page{i + 1}"] = json.dumps(response_json)
+
+            # **Remove the medication that was used** (if a valid medication was assigned)
+            if "med" in response_json and response_json["med"] not in ["no medication found in database", ""]:
+                used_medication = response_json["med"]
+                
+                # Find the closest match in provided_medications_list
+                closest_match = find_closest_medication(used_medication, provided_medications)
+                
+                if closest_match:
+                    provided_medications.remove(closest_match)  # Remove the closest matching medication
+            
             progress_bar.progress((i + 1) / len(diseasesArray))
 
         st.success("✅ Processing Completed!")
@@ -88,6 +119,7 @@ def process_diseases():
         elif response["text1"] == "no medication found in database":
             missing_medication_pages.append(page)
 
+
     # --- Track invalid pages ---
     if "skipped_pages" not in st.session_state:
         st.session_state["skipped_pages"] = set()
@@ -102,6 +134,7 @@ def process_diseases():
 
     # --- Identify missing diseases & medications ---
     if invalid_pages or missing_medication_pages:
+
         st.warning("⚠️ Some diseases or medications were not found. Please modify below.")
 
         for page in invalid_pages:
@@ -145,10 +178,20 @@ def process_diseases():
                 if st.button(f"✔️ Retry with {retry_disease}", key=f"retry_btn_{page}"):
                     with st.spinner(f"Updating {retry_disease}..."):
                         response = wait_for_run_completion(client, assistant_id, retry_disease, provided_medications, o2=oxygen_flag, diabetec=diabetec_flag)
-                        # Ensure response is correctly parsed as JSON
                         try:
                             parsed_response = json.loads(response) if isinstance(response, str) else response
                             st.session_state["mainContResponse"][page] = json.dumps(parsed_response)
+
+                            # **Remove the medication that was used (if applicable)**
+                            if "med" in parsed_response and parsed_response["med"] not in ["no medication found in database", ""]:
+                                used_medication = parsed_response["med"]
+                                
+                                # Find the closest match in provided_medications_list
+                                closest_match = find_closest_medication(used_medication, provided_medications)
+                                
+                                if closest_match:
+                                    provided_medications.remove(closest_match)  # Remove the closest matching medication
+                        
                         except json.JSONDecodeError:
                             st.error("Error processing the response. Please try again.")
                     st.rerun()
@@ -196,32 +239,87 @@ def process_diseases():
             disease_index = int(page.replace("page", "")) - 1
             disease_name = diseasesArray[disease_index]
 
-            retry_med = st.text_input(f"Enter new medication for {page}", "", key=f"retry_med_{page}")
+            col1, col2, col3, col4 = st.columns(4)
+            original_disease = diseasesArray[disease_index].strip()
 
-            col1, col2 = st.columns(2)
+            # --- Find a new replacement disease ---
+            next_valid_disease = None
+            for j in range(st.session_state["replacement_start_index"], len(patientDiseasesArray)):
+                if j not in st.session_state["used_disease_indices"]:
+                    candidate_disease = patientDiseasesArray[j].strip()
+                    if candidate_disease and candidate_disease.lower() != "none":
+                        next_valid_disease = candidate_disease
+                        st.session_state["used_disease_indices"].add(j)
+                        st.session_state["replacement_start_index"] = j + 1  # Ensure next disease is different
+                        break
+
+            # Store the replacement disease in session state
+            if f"replacement_disease_{page}" not in st.session_state:
+                st.session_state[f"replacement_disease_{page}"] = next_valid_disease if next_valid_disease else original_disease
+
+            # Ensure retry_disease is always initialized
+            retry_disease = st.session_state.get(f"replacement_disease_{page}", "").strip()
+
+            # Provide input field for user modification
+            retry_disease = st.text_input(
+                f"Enter new disease for {page}", 
+                retry_disease, 
+                key=f"retry_disease_{page}")
 
             with col1:
-                if st.button(f"🌐 Ask GPT for {disease_name}", key=f"gpt_med_{page}"):
-                    with st.spinner(f"Fetching medication for {disease_name}..."):
-                        gpt_result = fetch_info_from_gpt(client, "medication", disease_name)
-                        if gpt_result:
-                            st.session_state["mainContResponse"][page] = json.dumps(gpt_result)
-                    st.rerun()
+                    if st.button(f"✔️ Retry with {retry_disease}", key=f"retry_btn_{page}"):
+                        with st.spinner(f"Updating {retry_disease}..."):
+                            response = wait_for_run_completion(client, assistant_id, retry_disease, provided_medications, o2=oxygen_flag, diabetec=diabetec_flag)
+                            try:
+                                parsed_response = json.loads(response) if isinstance(response, str) else response
+                                st.session_state["mainContResponse"][page] = json.dumps(parsed_response)
 
-            # with col3:
-            #     if st.button(f"🌐 Ask GPT for {retry_disease}", key=f"gpt_med_{page}"):
-            #         with st.spinner(f"Fetching data for {retry_disease}..."):
-            #             # Ensure GPT response is correctly parsed as JSON
-            #             gpt_result = fetch_info_from_gpt(client, "disease", retry_disease)
-            #             if gpt_result:
-            #                 try:
-            #                     parsed_response = json.loads(gpt_result) if isinstance(gpt_result, str) else gpt_result
-            #                     st.session_state["mainContResponse"][page] = json.dumps(parsed_response)
-            #                 except json.JSONDecodeError:
-            #                     st.error("Error processing GPT response. Please try again.")
-            #         st.rerun()
+                                # **Remove the medication that was used (if applicable)**
+                                if "med" in parsed_response and parsed_response["med"] not in ["no medication found in database", ""]:
+                                    used_medication = parsed_response["med"]
+                                    
+                                    # Find the closest match in provided_medications_list
+                                    closest_match = find_closest_medication(used_medication, provided_medications)
+                                    
+                                    if closest_match:
+                                        provided_medications.remove(closest_match)  # Remove the closest matching medication
+                            
+                            except json.JSONDecodeError:
+                                st.error("Error processing the response. Please try again.")
+                        st.rerun()
+
 
             with col2:
+                # ✅ Option 2: Fetch a new medication from GPT
+                if st.button(f"🌐 Ask GPT for a new medication", key=f"gpt_med_new_{page}"):
+                    with st.spinner(f"Fetching new medication for {disease_name}..."):
+                        gpt_result = fetch_info_from_gpt(client, "disease", disease_name)
+                        if gpt_result:
+                            try:
+                                parsed_response = json.loads(gpt_result) if isinstance(gpt_result, str) else gpt_result
+                                st.session_state["mainContResponse"][page] = json.dumps(parsed_response)
+                            except json.JSONDecodeError:
+                                st.error("Error processing GPT response. Please try again.")
+                    st.rerun()
+
+
+            with col3:
+            # ✅ Option 3: Get the output from GPT **without medication**
+                if st.button(f"🌐 Get disease info without No medication", key=f"gpt_no_med_{page}"):
+                    with st.spinner(f"Fetching disease information without medication..."):
+                        gpt_result = fetch_info_from_gpt2(client, disease_name)
+                        if gpt_result:
+                            try:
+                                parsed_response = json.loads(gpt_result) if isinstance(gpt_result, str) else gpt_result
+                                parsed_response["med"] = "no medication found in database"  # Ensure medication is left empty
+                                st.session_state["mainContResponse"][page] = json.dumps(parsed_response)
+                                # shared_data.gpt2_used_pages.append(i + 1)  # ✅ Store page number
+
+                            except json.JSONDecodeError:
+                                st.error("Error processing GPT response. Please try again.")
+                    st.rerun()
+
+            with col4:
                 if st.button(f"❌ Skip {page}", key=f"skip_med_{page}"):
                     with st.spinner(f"Skipping medication for {disease_name}..."):
                         st.session_state["skipped_pages"].add(page)  # Store skipped page
