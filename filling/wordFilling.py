@@ -65,8 +65,8 @@ def fillDoc():
     constipation = extractedResults['diagnosis']['constipated']
     sn_name = shared_data.data['sn_name']
     appointment_dates = shared_data.data['appointment_dates']
-    oxygenFlag = extractedResults['diagnosis']['oxygen']
-    dm2_value =  extractedResults['diagnosis']['diabetec']
+    oxygenFlag = shared_data.data['extraction_results']['diagnosis']['oxygen']
+    dm2_value =  shared_data.data['extraction_results']['diagnosis']['diabetec']
     # print(appointment_dates)
     appointment_times = shared_data.data['appointment_times']
     # print(appointment_times)
@@ -140,9 +140,9 @@ def fillDoc():
 
 
     if extractedResults['extraDetails']['can'] == "true" and extractedResults['extraDetails']['walker'] == "true":
-        canWalkerText = 'can, walker'
+        canWalkerText = 'cane, walker'
     elif extractedResults['extraDetails']['can'] == "true" and extractedResults['extraDetails']['walker'] == "false":
-        canWalkerText = 'can'
+        canWalkerText = 'cane'
     elif extractedResults['extraDetails']['can'] == "false" and extractedResults['extraDetails']['walker'] == "false":
         canWalkerText = 'walker'
     else:
@@ -285,4 +285,5 @@ def fillDoc():
         mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
     )
 
-    st.warning(f"⚠️ Some medication places were left blank: {shared_data.gpt2_used_pages}")
+    if shared_data.gpt2_used_pages :
+        st.warning(f"⚠️ Some medication places were left blank: {shared_data.gpt2_used_pages}")

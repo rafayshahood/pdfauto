@@ -8,6 +8,9 @@ from datetime import datetime
 from pydantic import BaseModel, Field
 from langchain.output_parsers import PydanticOutputParser
 from dotenv import load_dotenv
+import json
+
+
 load_dotenv() 
 extractionResults = []  # global variable available throughout the notebook
 
@@ -58,7 +61,7 @@ class Diagnosis(BaseModel):
     
 class Medications(BaseModel):
     # all medications
-    medications: str = Field(description="10. Medications: Dose/Frequency/Route (N)ew (C)hanged")
+    medications: str = Field(description="10. Medications: Dose/Frequency/Route (N)ew (C)hanged.  Separate each medication with a --")
     painMedications: str = Field(description="What is the pain medication give to the individual? Copy paste the pain medication with instruction. If there is no pain medication return empty string.")
 
 class ExtraDetails(BaseModel):
@@ -107,7 +110,7 @@ def process_485_information(extracted_text):
                                         postamble=postamble).to_messages()
     chat = ChatOpenAI(model="gpt-4o-mini")  # Use GPT-4 here
     response = chat(request, temperature=0.0)
-    print(f"Response from LLM:\n{response.content}")
+    # print(f"Response from LLM:\n{response.content}")
     return response.content
 
 
@@ -137,7 +140,6 @@ def process_485_pdf(file_path, pages_list=None):
     # print(extracted_text)
     response = process_485_information(extracted_text)
     extractionResults = response  
-    import json
 
     # If extractionResults is already a dict, you can use it directly.
     if isinstance(extractionResults, dict):
@@ -161,6 +163,9 @@ def process_485_pdf(file_path, pages_list=None):
     # Set flags based on presence
     extractionResults["extraDetails"]["can"] = "true" if "cane" in safety_measures else "false"
     extractionResults["extraDetails"]["walker"] = "true" if "walker" in safety_measures else "false"
+
+    print(f"Response from LLM:\n{extractionResults}")
+    # print(extractionResults)
     
     return extractionResults
 

@@ -31,7 +31,7 @@ assistant_id = "asst_ugMOPS8hWwcUBYlT95sfJPXb"
 #     }
 # }
 
-def find_closest_medication(med_name, med_list, threshold=80):
+def find_closest_medication(med_name, med_list, threshold=75):
     """
     Finds the closest matching medication name in the provided medication list using fuzzy matching.
     If a match is found above the threshold, return it; otherwise, return None.
@@ -50,14 +50,17 @@ def process_diseases():
     patientDiseases = extractedResults['patientDetails']['principalDiagnosis'] + "--" + extractedResults['patientDetails']['pertinentdiagnosis'] + "--" + extractedResults['diagnosis']['pertinentdiagnosisCont']
     patientDiseasesArray = patientDiseases.split("--")
 
-    diseasesArray = patientDiseasesArray[:9]  # Selecting first 6 diseases
+    print(f"patient disease array:  {patientDiseasesArray}")
+    diseasesArray = patientDiseasesArray[:9]  # Selecting first 10 diseases
 
     # Extract medication list
     provided_medications = set(
-        med.strip().split(",")[0].lower()  # Extract medication name (before dosage)
-        for med in extractedResults["medications"]["medications"].split(";")  # Splitting by semicolon
+        med.strip().split(" by ")[0].lower()  # Extract medication name (before administration details)
+        for med in extractedResults["medications"]["medications"].split("--")  # Splitting by comma
     )
     
+    print(f"provided_medications: {provided_medications}" )
+
 
     diabetec_flag = extractedResults['diagnosis']['diabetec']
     oxygen_flag = extractedResults['diagnosis']['oxygen']
