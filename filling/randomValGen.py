@@ -1,8 +1,8 @@
 import random
 
-# Initialize global variables for tracking previous values
-previous_bsFast = 180  # Initial high value for bsFast
-previous_bsRapid = previous_bsFast + 30  # Ensure a 30 difference
+# Set fixed initial values for each run
+INITIAL_BS_FAST = 180  # Starting value for bsFast
+INITIAL_BS_RAPID = INITIAL_BS_FAST + 30  # Ensure a 30 difference
 
 def get_random_bp(systolic_min=130, systolic_max=145, diastolic_min=65, diastolic_max=87):
     systolic = random.randint(systolic_min, systolic_max)
@@ -15,12 +15,10 @@ def get_random_value(min_value, max_value, roundTo=1, is_integer=False):
         return round(value)
     return round(value, roundTo)
 
-def get_decreasing_bs_values():
+def get_decreasing_bs_values(previous_bsFast, previous_bsRapid):
     """
     Generates decreasing values for bsFast and ensures bsRapid remains exactly 30 units higher.
     """
-    global previous_bsFast, previous_bsRapid
-
     # Set minimum limits
     min_bsFast = 100
     min_bsRapid = 130  # Must remain 30 higher than min_bsFast
@@ -29,20 +27,16 @@ def get_decreasing_bs_values():
     bsFastVal = max(previous_bsFast - random.randint(3, 5), min_bsFast)
     bsRapidVal = bsFastVal + 30  # Maintain a strict 30 difference
 
-    # Update previous values for next iteration
-    previous_bsFast = bsFastVal
-    previous_bsRapid = bsRapidVal
+    return bsFastVal, bsRapidVal
 
-    return str(bsFastVal), str(bsRapidVal)
-
-def getRangeValues():
+def getRangeValues(previous_bsFast, previous_bsRapid):
     tempVal = str(get_random_value(97.7, 99.5))
     hrVal = str(get_random_value(60, 100, is_integer=True))
     rrVal = str(get_random_value(16, 20, is_integer=True))
     oxygenVal = str(get_random_value(95, 99, is_integer=True))
     
     # Get decreasing blood sugar values
-    bsFastVal, bsRapidVal = get_decreasing_bs_values()
+    bsFastVal, bsRapidVal = get_decreasing_bs_values(previous_bsFast, previous_bsRapid)
     
     random_bp = str(get_random_bp())
     return tempVal, hrVal, rrVal, oxygenVal, bsFastVal, bsRapidVal, random_bp
@@ -57,14 +51,20 @@ def getRangeValuesArray(noOfVal):
     bsRapidArray = []
     random_bpArray = []
 
+    previous_bsFast = INITIAL_BS_FAST  # Reset at the start of each run
+    previous_bsRapid = INITIAL_BS_RAPID
+    
     for i in range(noOfVal):
-        tempVal, hrVal, rrVal, oxygenVal, bsFastVal, bsRapidVal, random_bp = getRangeValues()
+        tempVal, hrVal, rrVal, oxygenVal, bsFastVal, bsRapidVal, random_bp = getRangeValues(previous_bsFast, previous_bsRapid)
         tempArray.append(tempVal)
         hrArray.append(hrVal)
         rrArray.append(rrVal)
         oxygenArray.append(oxygenVal)
-        bsFastArray.append(bsFastVal)
-        bsRapidArray.append(bsRapidVal)
+        bsFastArray.append(str(bsFastVal))
+        bsRapidArray.append(str(bsRapidVal))
         random_bpArray.append(random_bp)
+        # Update previous values
+        previous_bsFast = bsFastVal
+        previous_bsRapid = bsRapidVal
 
     return tempArray, hrArray, rrArray, oxygenArray, bsFastArray, bsRapidArray, random_bpArray

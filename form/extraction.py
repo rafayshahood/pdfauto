@@ -35,7 +35,7 @@ class PatientDetails(BaseModel):
     # # patient name
     name: str = Field(description="What is the Patient's Name?")
     # # provider name
-    providerName: datetime = Field(description="What is the provider's name?")
+    providerName: datetime = Field(description="In section 7. Provider's Name, Address, and Telephone Number, what is the provider's name? Only take info from section 7. Provider's Name, Address, and Telephone Number while answering this question and do not take info from any other part of the extracted text")
     # principal diagnosis
     principalDiagnosis: str = Field(description="principal diagnosis of the patient?")
     # all other pertinant diagnosis
@@ -112,8 +112,8 @@ def process_485_information(extracted_text):
 
 
 def extract_text_from_pdf(file_path, pages_list=None):
-    # llmw = LLMWhispererClientV2()
     llmw = LLMWhispererClientV2()
+    # llmw = LLMWhispererClientV2(api_key = "E7-04ANPqQcYji7GNea0YHorP_-thMKC50BLRvwonrI")
 
     
     try:

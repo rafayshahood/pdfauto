@@ -24,7 +24,7 @@ def adjust_dates(appointment_date, appointment_time, constipation=False):
     # Use a 24-hour cutoff for 10:00.
     cutoff = datetime.strptime("10:00", "%H:%M")
     
-    if constipation:
+    if constipation == True:
         new_dt = dt - timedelta(days=1)
     else:
         new_dt = dt - timedelta(days=1) if t < cutoff else dt
