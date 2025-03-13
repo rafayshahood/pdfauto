@@ -23,9 +23,12 @@ def get_decreasing_bs_values(previous_bsFast, previous_bsRapid):
     min_bsFast = 100
     min_bsRapid = 130  # Must remain 30 higher than min_bsFast
 
-    # Decrease values randomly by 3-5 units
-    bsFastVal = max(previous_bsFast - random.randint(3, 5), min_bsFast)
+    # Choose a random decrease with weighted probability
+    decrease = random.choices([1, 2, 3, 4], weights=[0.4, 0.35, 0.15, 0.1])[0]
+    # Ensure the decrease does not go below minimum limits
+    bsFastVal = max(previous_bsFast - decrease, min_bsFast)
     bsRapidVal = bsFastVal + 30  # Maintain a strict 30 difference
+
 
     return bsFastVal, bsRapidVal
 

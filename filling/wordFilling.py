@@ -10,6 +10,16 @@ import io
 from docx import Document
 import json
 import random
+import re
+
+
+def clean_safety_measures(safety_measures):
+    """
+    Removes 'COVID-19 Precaution' or 'COVID-19 Precautions' (case insensitive) from safety measures.
+    Handles extra spaces or commas after removal.
+    """
+    return re.sub(r'covid-19 precaution[s]?,?\s*', '', safety_measures, flags=re.IGNORECASE).strip()
+
 def remove_brackets(text):
     """
     Removes all square brackets [ ] from the given text.
@@ -210,15 +220,19 @@ def fillDoc():
         }
 
         depressed_value = extractedResults['diagnosis']['depression']
-        allSafetyMeasures = extractedResults['extraDetails']['safetyMeasures']
         edemaResults = extractedResults['extraDetails']['edema']
         check_vertigo = extractedResults['extraDetails']['vertigo']
+        palpitation_check = extractedResults['extraDetails']['palpitation']
+        # remove covid 19-precautions
+        allSafetyMeasures = extractedResults['extraDetails']['safetyMeasures']
+        allSafetyMeasures = clean_safety_measures(allSafetyMeasures)
+
 
     
         out_file = process_document_full(
             wordFileName, headerPage, replacements_first_col, replacements_second_col,
             allSafetyMeasures, dm2_value, edemaResults, depressed_value, i, getAction, valuesToGet, check_vertigo, 
-            check_f, check_r
+            check_f, check_r, palpitation_check
         )
         output_files.append(out_file)
 

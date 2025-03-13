@@ -118,6 +118,7 @@ def fetch_info_from_gpt(client, query_type, query_value, o2_flag=False, diabetec
         - If the disease name contains a leading code (e.g., "I11.9 Hypertensive heart disease with"), **ignore the code** and use only the disease name.
         - Find a single medication for it
         - Ensure text1 and text2 remain synchronized.
+        - **Escape all double quotes (`"`) inside text fields** to prevent JSON errors.
 
         
         RESPONSE FORMAT (STRICTLY FOLLOW THIS JSON FORMAT):
@@ -131,6 +132,7 @@ def fetch_info_from_gpt(client, query_type, query_value, o2_flag=False, diabetec
         
         STRICT GUIDELINES:
         - **Return ONLY valid JSON** (no extra text or formatting outside JSON).
+        - **Escape all double quotes (`"`) inside text fields** to prevent JSON parsing errors.  
         - **Follow the specified format exactly—do not alter structure or wording.
         - **Exclude unnecessary information (e.g., sources, extra text).
         - **If the disease is not found, return:**
@@ -227,7 +229,9 @@ def fetch_info_from_gpt2(client, query_value, o2_flag=False, diabetec_flag=False
 
     TASK: Search for structured medical information on the disease: '{query_value}'. 
     - If the disease name contains a leading code (e.g., "I11.9 Hypertensive heart disease with"), **ignore the code** and use only the disease name.
-    
+    - **Escape all double quotes (`"`) inside text fields** to ensure JSON validity.
+    - Ensure `text1` and `text2` remain synchronized.
+
     RESPONSE FORMAT (STRICTLY FOLLOW THIS JSON FORMAT):
     {{
         "text1": "Altered status due to [{query_value}]. Knowledge deficit regarding measures to control [{query_value}] and the medication //???medication info and usage???// as ordered by MD.",
@@ -236,7 +240,9 @@ def fetch_info_from_gpt2(client, query_value, o2_flag=False, diabetec_flag=False
     
     STRICT GUIDELINES:
     - **Return ONLY valid JSON** (no extra text or formatting outside JSON).
+    - **Escape all double quotes (`"`) inside text fields** to prevent JSON parsing errors.  
     - **Follow the specified format exactly—do not alter structure or wording.
+    - **Exclude unnecessary information (e.g., sources, extra text).
     - **Exclude unnecessary information (e.g., sources, extra text).
     
     - **If the disease is not found, return:**

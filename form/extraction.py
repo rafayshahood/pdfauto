@@ -115,8 +115,8 @@ def process_485_information(extracted_text):
 
 
 def extract_text_from_pdf(file_path, pages_list=None):
-    llmw = LLMWhispererClientV2()
-    # llmw = LLMWhispererClientV2(api_key = "E7-04ANPqQcYji7GNea0YHorP_-thMKC50BLRvwonrI")
+    # llmw = LLMWhispererClientV2()
+    llmw = LLMWhispererClientV2(api_key = "E7-04ANPqQcYji7GNea0YHorP_-thMKC50BLRvwonrI")
 
     
     try:
@@ -157,6 +157,7 @@ def process_485_pdf(file_path, pages_list=None):
 
     extractionResults['diagnosis']['depression'] = getFlags(extracted_text, ["depressed", "depression"],1)
     extractionResults['extraDetails']['vertigo'] = getFlags(extracted_text, ["Vertigo", "vertigo"], 0)
+    extractionResults['extraDetails']['palpitation'] = getFlags(extracted_text, ["palpitation", "Palpitation", "palpitations,","Palpitations"], 1)
     # Extract safety measures (handling case sensitivity)
     safety_measures = extractionResults["extraDetails"].get("safetyMeasures", "").lower()
 

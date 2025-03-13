@@ -50,7 +50,7 @@ def process_diseases():
     patientDiseases = extractedResults['patientDetails']['principalDiagnosis'] + "--" + extractedResults['patientDetails']['pertinentdiagnosis'] + "--" + extractedResults['diagnosis']['pertinentdiagnosisCont']
     patientDiseasesArray = patientDiseases.split("--")
 
-    print(f"patient disease array:  {patientDiseasesArray}")
+    # print(f"patient disease array:  {patientDiseasesArray}")
     diseasesArray = patientDiseasesArray[:9]  # Selecting first 10 diseases
 
     # Extract medication list
@@ -59,7 +59,7 @@ def process_diseases():
         for med in extractedResults["medications"]["medications"].split("--")  # Splitting by comma
     )
     
-    print(f"provided_medications: {provided_medications}" )
+    # print(f"provided_medications: {provided_medications}" )
 
 
     diabetec_flag = extractedResults['diagnosis']['diabetec']
@@ -84,9 +84,11 @@ def process_diseases():
         for i, disease_name in enumerate(diseasesArray):
             if provided_medications:  # ✅ Use OpenAI Assistant if medications exist
                 response = wait_for_run_completion(client, assistant_id, disease_name, provided_medications, o2=oxygen_flag, diabetec=diabetec_flag)
+                print(f" wait for run: {response}")
             else:  # ✅ Use GPT if no medications exist
                 response = fetch_info_from_gpt2(client, disease_name)
                 shared_data.gpt2_used_pages.append(i + 1)  # ✅ Store page number
+                print(f" gpt2: {response}")
 
             # response = wait_for_run_completion(client, assistant_id, disease_name, provided_medications, o2=oxygen_flag, diabetec=diabetec_flag)
             response_json = json.loads(response) if isinstance(response, str) else response

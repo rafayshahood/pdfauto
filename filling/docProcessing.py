@@ -37,7 +37,7 @@ def process_cell(cell, replacement_dict, dynamic_counters):
 # Process document function.
 def process_document_full(file_path, newHeader, replacement1, replacement2, 
                           allSafetyMeasures, dm2_value, edemaResults, depressed_value, 
-                          iteration_index, action, total_pages, check_vertigo=False, check_f=False, check_r=False):
+                          iteration_index, action, total_pages, check_vertigo=False, check_f=False, check_r=False, palpitation_check= False):
     """
     Processes the Word document and performs the following tasks:
       1. Header text replacement.
@@ -252,6 +252,20 @@ def process_document_full(file_path, newHeader, replacement1, replacement2,
 
                         # Update the Vertigo checkbox
                         text = text.replace("☒Vertigo", "☐Vertigo").replace("☐Vertigo", vertigo_checkbox)
+
+                        run.text = text  # Apply updated text
+
+    # Palpitations Check
+    palpitation_checkbox = "☒Palpitations" if palpitation_check else "☐Palpitations" 
+
+    for table in doc.tables:
+        for row in table.rows:
+            for cell in row.cells:
+                for paragraph in cell.paragraphs:
+                    for run in paragraph.runs:
+                        text = run.text
+                        # Update the Vertigo checkbox
+                        text = text.replace("☒Palpitations", "☐Palpitations").replace("☐Palpitations", palpitation_checkbox)
 
                         run.text = text  # Apply updated text
 
