@@ -76,7 +76,7 @@ def complete_form():
         #             'name': 'FORD, HENRY', 
         #             'providerName': 'MINT Home Health Care Inc.', 
         #             'principalDiagnosis': 'Primary osteoarthritis, left shoulder', 
-        #             'pertinentdiagnosis': 'Primary osteoarthritis, right -- Spondylosis w/o myelopathy or radiculopathy -- Essential (primary) hypertension -- Unspecified asthma, uncomplicated -- Edema, unspecified -- Weakness -- Iron deficiency anemia, unspecified -- Hyperlipidemia, unspecified -- Vitamin D deficiency, unspecified -- History of falling'}, 
+        #             'pertinentdiagnosis': 'hku, right -- Spondylosis w/o myelopathy or radiculopathy -- Essential (primary) hypertension -- Unspecified asthma, uncomplicated -- Edema, unspecified -- Weakness -- Iron deficiency anemia, unspecified -- Hyperlipidemia, unspecified -- Vitamin D deficiency, unspecified -- History of falling'}, 
         #         'diagnosis': 
         #             {'pertinentdiagnosisCont': '', 
         #              'constipated': False, 
@@ -93,6 +93,7 @@ def complete_form():
         #              'nutritionalReqCont': '', 
         #              'edema': 'Pedal R/L, Pitting +1',
         #                'vertigo': False, 
+        #                'palpitation': False,
         #                'can': 'true', 
         #                'walker': 'true'}}
         # extraction_result = {

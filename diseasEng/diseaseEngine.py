@@ -43,6 +43,7 @@ def find_closest_medication(med_name, med_list, threshold=75):
     
     return best_match if score >= threshold else None  # Only return if similarity is high
 def process_diseases():
+    
     # gpt2_used_pages = []  # ✅ Track pages where we used GPT2 due to empty medication list
     extractedResults = shared_data.data['extraction_results']
 
@@ -187,7 +188,7 @@ def process_diseases():
                             parsed_response = json.loads(response) if isinstance(response, str) else response
                             st.session_state["mainContResponse"][page] = json.dumps(parsed_response)
 
-                            # **Remove the medication that was used** (if a valid medication was assigned)
+                            # **Remove the medication that was used (if applicable)**
                             if "med" in parsed_response and parsed_response["med"] not in ["no medication found in database", ""]:
                                 used_medication = parsed_response["med"]
                                 

@@ -115,8 +115,8 @@ def process_485_information(extracted_text):
 
 
 def extract_text_from_pdf(file_path, pages_list=None):
-    llmw = LLMWhispererClientV2()
-    # llmw = LLMWhispererClientV2(api_key = "E7-04ANPqQcYji7GNea0YHorP_-thMKC50BLRvwonrI")
+    # llmw = LLMWhispererClientV2()
+    llmw = LLMWhispererClientV2(api_key = "E7-04ANPqQcYji7GNea0YHorP_-thMKC50BLRvwonrI")
 
     
     try:
