@@ -187,7 +187,7 @@ def process_diseases():
                             parsed_response = json.loads(response) if isinstance(response, str) else response
                             st.session_state["mainContResponse"][page] = json.dumps(parsed_response)
 
-                            # **Remove the medication that was used (if applicable)**
+                            # **Remove the medication that was used** (if a valid medication was assigned)
                             if "med" in parsed_response and parsed_response["med"] not in ["no medication found in database", ""]:
                                 used_medication = parsed_response["med"]
                                 
