@@ -164,7 +164,12 @@ def process_diseases():
                 st.session_state[f"replacement_disease_{page}"] = next_valid_disease if next_valid_disease else original_disease
 
             # Ensure retry_disease is always initialized
-            retry_disease = st.session_state.get(f"replacement_disease_{page}", "").strip()
+            # retry_disease = st.session_state.get(f"replacement_disease_{page}", "").strip()
+            # Ensure retry_disease is always initialized to the correct disease for the current page
+            if f"replacement_disease_{page}" not in st.session_state:
+                st.session_state[f"replacement_disease_{page}"] = original_disease  # Set correct disease
+
+            retry_disease = st.session_state[f"replacement_disease_{page}"]  # Retrieve the correct disease
 
             # Provide input field for user modification
             retry_disease = st.text_input(
@@ -264,7 +269,13 @@ def process_diseases():
                 st.session_state[f"replacement_disease_{page}"] = next_valid_disease if next_valid_disease else original_disease
 
             # Ensure retry_disease is always initialized
-            retry_disease = st.session_state.get(f"replacement_disease_{page}", "").strip()
+            # retry_disease = st.session_state.get(f"replacement_disease_{page}", "").strip()
+
+            # Ensure retry_disease is always initialized to the correct disease for the current page
+            if f"replacement_disease_{page}" not in st.session_state:
+                st.session_state[f"replacement_disease_{page}"] = original_disease  # Set correct disease
+
+            retry_disease = st.session_state[f"replacement_disease_{page}"]  # Retrieve the correct disease
 
             # Provide input field for user modification
             retry_disease = st.text_input(

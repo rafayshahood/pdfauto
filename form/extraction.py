@@ -57,7 +57,7 @@ class Diagnosis(BaseModel):
     # diabetec
     diabetec: bool = Field(description="Does the patient suffer from Diabetes Mellitus Type 2?")
     # oxygen val
-    oxygen: bool = Field(description="In section 21. Orders for Discipline and Treatments continued. Under the heading: SN TO PERFORM EVERY VISIT, check whether a statment regarding o2 or oxygen is present or not?")
+    oxygen: bool = Field(description="In section 21. Orders for Discipline and Treatments continued. Under the heading: SN TO PERFORM EVERY VISIT, check whether a statment containing the text inside the following brackets [Check o2 saturation level with signs] is present or not.?")
     
 class Medications(BaseModel):
     # all medications
