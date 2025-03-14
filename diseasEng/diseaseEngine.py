@@ -3,7 +3,7 @@ import json
 import openai
 from dotenv import load_dotenv
 import data.shared_data as shared_data
-from diseasEng.helperFunctions import fetch_info_from_gpt, wait_for_run_completion, fetch_info_from_gpt2
+from diseasEng.helperFunctions import fetch_info_from_gpt, wait_for_run_completion, fetch_info_from_gpt2, find_closest_medication
 import time
 from fuzzywuzzy import process  # Import fuzzy string matching
 
@@ -14,34 +14,7 @@ client = openai.OpenAI()
 # OpenAI Assistant ID
 assistant_id = "asst_ugMOPS8hWwcUBYlT95sfJPXb"
 
-# # Sample extractedResults data
-# extractedResults = {
-#     "patientDetails": {
-#         "medicalRecordNo": "000000022-001",
-#         "name": "Pork, John",
-#         "providerName": "Mint Home Health Care Inc.",
-#         "principalDiagnosis": "diabetes mellitus with",
-#         "pertinentdiagnosis": "None -- None: -- Chronic kidney disease, unspec: -- Athscl heart disease of native -- Other disorders of lung -- Paroxysmal atrial fibrillation"
-#     },
-#     "diagnosis": {
-#         "pertinentdiagnosisCont": "Hypothyroidism, unspecified -- Mixed hyperlipidemia -- Old myocardial infarction -- Hypokalemia -- Gastro-esophageal reflux disease without esophagitis -- Hypomagnesemia -- Age-related cognitive decline -- Primary generalized (osteo) arthritis -- Vitamin D deficiency, unspecified -- Idiopathic gout, multiple sites -- Age-related osteoporosis w/o current pathological fracture -- Weakness -- Long term (current) use of anticoagulants -- Dependence on supplemental oxygen"
-#     },
-#     "medications": {
-#         "medications": "Ozempic 2 mg/3 ml, inject 0.5 mg subcutaneously daily; Janumet 50-500 mg, 1 tablet by mouth 2 times daily; Atorvastatin 20 mg, 1 tablet by mouth daily; Aspirin EC 81 mg, 1 tablet by mouth daily; Levothyroxine 75 mcg, 1 tablet by mouth daily; Allopurinol 100 mg, 1 tablet by mouth daily; Alendronate 70 mg, 1 tablet by mouth weekly; Omeprazole 40 mg, 1 tablet by mouth daily; Eliquis 2.5 mg, 1 tablet by mouth 2 times daily"
-#     }
-# }
 
-def find_closest_medication(med_name, med_list, threshold=75):
-    """
-    Finds the closest matching medication name in the provided medication list using fuzzy matching.
-    If a match is found above the threshold, return it; otherwise, return None.
-    """
-    if not med_list:
-        return None  # No available medications to match
-
-    best_match, score = process.extractOne(med_name.lower(), med_list)
-    
-    return best_match if score >= threshold else None  # Only return if similarity is high
 def process_diseases():
     
     # gpt2_used_pages = []  # ✅ Track pages where we used GPT2 due to empty medication list
@@ -85,11 +58,11 @@ def process_diseases():
         for i, disease_name in enumerate(diseasesArray):
             if provided_medications:  # ✅ Use OpenAI Assistant if medications exist
                 response = wait_for_run_completion(client, assistant_id, disease_name, provided_medications, o2=oxygen_flag, diabetec=diabetec_flag)
-                print(f" wait for run: {response}")
+                # print(f" wait for run: {response}")
             else:  # ✅ Use GPT if no medications exist
                 response = fetch_info_from_gpt2(client, disease_name)
                 shared_data.gpt2_used_pages.append(i + 1)  # ✅ Store page number
-                print(f" gpt2: {response}")
+                # print(f" gpt2: {response}")
 
             # response = wait_for_run_completion(client, assistant_id, disease_name, provided_medications, o2=oxygen_flag, diabetec=diabetec_flag)
             response_json = json.loads(response) if isinstance(response, str) else response
@@ -126,18 +99,6 @@ def process_diseases():
             missing_medication_pages.append(page)
 
 
-    # --- Track invalid pages ---
-    if "skipped_pages" not in st.session_state:
-        st.session_state["skipped_pages"] = set()
-
-    # --- Track invalid pages ---
-    if "replacement_start_index" not in st.session_state:
-        st.session_state["replacement_start_index"] = len(diseasesArray)
-
-    # # --- Track invalid pages ---
-    if "used_disease_indices" not in st.session_state:
-        st.session_state["used_disease_indices"] = set()
-
     # --- Identify missing diseases & medications ---
     if invalid_pages or missing_medication_pages:
 
@@ -161,34 +122,24 @@ def process_diseases():
 
             # Store the replacement disease in session state
             if f"replacement_disease_{page}" not in st.session_state:
-                st.session_state[f"replacement_disease_{page}"] = next_valid_disease if next_valid_disease else original_disease
+                st.session_state[f"replacement_disease_{page}"] = next_valid_disease
 
             # Ensure retry_disease is always initialized
-            # retry_disease = st.session_state.get(f"replacement_disease_{page}", "").strip()
-            # Ensure retry_disease is always initialized to the correct disease for the current page
-            if f"replacement_disease_{page}" not in st.session_state:
-                st.session_state[f"replacement_disease_{page}"] = original_disease  # Set correct disease
+            retry_disease = st.session_state.get(f"replacement_disease_{page}", "").strip()
 
-            retry_disease = st.session_state[f"replacement_disease_{page}"]  # Retrieve the correct disease
-
-            # Provide input field for user modification
+            # --- Input box for new replacement disease ---
             retry_disease = st.text_input(
                 f"Enter new disease for {page}", 
                 retry_disease, 
                 key=f"retry_disease_{page}"
             )
-            # # --- Input box for new replacement disease ---
-            # retry_disease = st.text_input(
-            #     f"Enter new disease for {page}", 
-            #     st.session_state[f"replacement_disease_{page}"], 
-            #     key=f"retry_disease_{page}"
-            # )
 
             col1, col2, col3, col4 = st.columns(4)
             with col1:
                 if st.button(f"✔️ Retry with {retry_disease}", key=f"retry_btn_{page}"):
                     with st.spinner(f"Updating {retry_disease}..."):
                         response = wait_for_run_completion(client, assistant_id, retry_disease, provided_medications, o2=oxygen_flag, diabetec=diabetec_flag)
+                        print(f"API Response for {retry_disease}: {response}")  # Debugging
                         try:
                             parsed_response = json.loads(response) if isinstance(response, str) else response
                             st.session_state["mainContResponse"][page] = json.dumps(parsed_response)
@@ -269,13 +220,7 @@ def process_diseases():
                 st.session_state[f"replacement_disease_{page}"] = next_valid_disease if next_valid_disease else original_disease
 
             # Ensure retry_disease is always initialized
-            # retry_disease = st.session_state.get(f"replacement_disease_{page}", "").strip()
-
-            # Ensure retry_disease is always initialized to the correct disease for the current page
-            if f"replacement_disease_{page}" not in st.session_state:
-                st.session_state[f"replacement_disease_{page}"] = original_disease  # Set correct disease
-
-            retry_disease = st.session_state[f"replacement_disease_{page}"]  # Retrieve the correct disease
+            retry_disease = st.session_state.get(f"replacement_disease_{page}", "").strip()
 
             # Provide input field for user modification
             retry_disease = st.text_input(

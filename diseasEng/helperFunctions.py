@@ -2,9 +2,21 @@ import time
 import json
 import logging
 from dotenv import load_dotenv
+from fuzzywuzzy import process  # Import fuzzy string matching
 # Load environment variables
 load_dotenv()
 
+def find_closest_medication(med_name, med_list, threshold=75):
+    """
+    Finds the closest matching medication name in the provided medication list using fuzzy matching.
+    If a match is found above the threshold, return it; otherwise, return None.
+    """
+    if not med_list:
+        return None  # No available medications to match
+
+    best_match, score = process.extractOne(med_name.lower(), med_list)
+    
+    return best_match if score >= threshold else None  # Only return if similarity is high
 
 # Function that sends the request and waits for completion
 def wait_for_run_completion(client, assistant_id, disease_name, provided_medications, o2=False, diabetec=False, sleep_interval=5):

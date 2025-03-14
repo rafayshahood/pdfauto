@@ -68,34 +68,34 @@ def complete_form():
             tmp_file.write(uploaded_file.read())
             tmp_file_path = tmp_file.name
 
-        extraction_result = extractionMain(tmp_file_path)
+        # extraction_result = extractionMain(tmp_file_path)
 
-        # extraction_result = {
-        #     'patientDetails': 
-        #         {'medicalRecordNo': '000000156-001', 
-        #             'name': 'FORD, HENRY', 
-        #             'providerName': 'MINT Home Health Care Inc.', 
-        #             'principalDiagnosis': 'Primary osteoarthritis, left shoulder', 
-        #             'pertinentdiagnosis': 'hku, right -- Spondylosis w/o myelopathy or radiculopathy -- Essential (primary) hypertension -- Unspecified asthma, uncomplicated -- Edema, unspecified -- Weakness -- Iron deficiency anemia, unspecified -- Hyperlipidemia, unspecified -- Vitamin D deficiency, unspecified -- History of falling'}, 
-        #         'diagnosis': 
-        #             {'pertinentdiagnosisCont': '', 
-        #              'constipated': False, 
-        #              'painIn': 'Lower Back, Bilateral Shoulders, Joints', 
-        #              'diabetec': False, 
-        #              'oxygen': False, 
-        #              'depression': False}, 
-        #         'medications': 
-        #             {'medications': 'Chlorthalidone 25 mg, 1 tablet by mouth daily -- Rosuvastatin 10 mg, 1 tablet by mouth daily -- Magnesium 250 mg, 1 tablet by mouth daily -- Albuterol HFA 90 mcg, inhale 2 puffs by mouth 2 times daily -- Aspirin 81 mg, 1 tablet by mouth daily -- Ibuprofen 600 mg, 1 tablet by mouth every 6 hours as needed for pain -- Pain Reliever Ointment Gel, apply topically to affected area 2 times daily -- Ferrous Sulfate 325 mg, 1 tablet by mouth daily -- Vitamin D3 2000 International Units, 1 capsule by mouth daily -- Oyster Shell Calcium 500 mg, 1 tablet by mouth daily -- Tylenol 500 mg, 1 capsule by mouth every 6 hours as needed for pain', 
-        #              'painMedications': 'Ibuprofen 600 mg, 1 tablet by mouth every 6 hours as needed for pain'}, 
-        #         'extraDetails': 
-        #             {'safetyMeasures': 'Bleeding precautions, Fall precautions, Clear pathways, Infection control -- Walker, Cane, Universal Precautions, 911 protocol, COVID-19 Precautions', 
-        #              'nutritionalReq': 'NAS, Low fat, Low cholesterol', 
-        #              'nutritionalReqCont': '', 
-        #              'edema': 'Pedal R/L, Pitting +1',
-        #                'vertigo': False, 
-        #                'palpitation': False,
-        #                'can': 'true', 
-        #                'walker': 'true'}}
+        extraction_result = {
+            'patientDetails': 
+                {'medicalRecordNo': '000000156-001', 
+                    'name': 'FORD, HENRY', 
+                    'providerName': 'MINT Home Health Care Inc.', 
+                    'principalDiagnosis': 'Primary osteoarthritis, left shoulder', 
+                    'pertinentdiagnosis': 'vsd, right -- Spondylosis w/o myelopathy or radiculopathy -- Essential (primary) hypertension -- Unspecified asthma, uncomplicated -- Edema, unspecified -- Weakness -- Iron deficiency anemia, unspecified -- Hyperlipidemia, unspecified -- Vitamin D deficiency, unspecified -- History of falling'}, 
+                'diagnosis': 
+                    {'pertinentdiagnosisCont': '', 
+                     'constipated': False, 
+                     'painIn': 'Lower Back, Bilateral Shoulders, Joints', 
+                     'diabetec': False, 
+                     'oxygen': False, 
+                     'depression': False}, 
+                'medications': 
+                    {'medications': 'Chlorthalidone 25 mg, 1 tablet by mouth daily -- Rosuvastatin 10 mg, 1 tablet by mouth daily -- Magnesium 250 mg, 1 tablet by mouth daily -- Albuterol HFA 90 mcg, inhale 2 puffs by mouth 2 times daily -- Aspirin 81 mg, 1 tablet by mouth daily -- Ibuprofen 600 mg, 1 tablet by mouth every 6 hours as needed for pain -- Pain Reliever Ointment Gel, apply topically to affected area 2 times daily -- Ferrous Sulfate 325 mg, 1 tablet by mouth daily -- Vitamin D3 2000 International Units, 1 capsule by mouth daily -- Oyster Shell Calcium 500 mg, 1 tablet by mouth daily -- Tylenol 500 mg, 1 capsule by mouth every 6 hours as needed for pain', 
+                     'painMedications': 'Ibuprofen 600 mg, 1 tablet by mouth every 6 hours as needed for pain'}, 
+                'extraDetails': 
+                    {'safetyMeasures': 'Bleeding precautions, Fall precautions, Clear pathways, Infection control -- Walker, Cane, Universal Precautions, 911 protocol, COVID-19 Precautions', 
+                     'nutritionalReq': 'NAS, Low fat, Low cholesterol', 
+                     'nutritionalReqCont': '', 
+                     'edema': 'Pedal R/L, Pitting +1',
+                       'vertigo': False, 
+                       'palpitation': False,
+                       'can': 'true', 
+                       'walker': 'true'}}
         # extraction_result = {
         #                     "patientDetails": {
         #                         "medicalRecordNo": "000000022-001",
