@@ -1,10 +1,14 @@
 import re
 from docx import Document
-
+import data.shared_data as shared_data
+import streamlit as st
 # LLMWHISPERER_API_KEY="qp6bhMbY3EmpaQqNU2KObHX8fMixMSp0nGcf8GyNnNc"
 # LLMWHISPERER_API_KEY="8S_vXzGY7lwCIi0CrUPEGyPojbZu_sxkr7tjG6DqkLg"
 # LLMWHISPERER_API_KEY="Z_OCRxI2NjZC3EdpoB5aAWNbHKiaHzE3qO6ll1Z37Vc"
 
+def sanitize_filename(filename):
+    """Removes invalid characters from filenames."""
+    return re.sub(r'[\/:*?"<>|]', '', filename)  # Remove special characters
 
 def process_cell(cell, replacement_dict, dynamic_counters):
     """
@@ -118,47 +122,6 @@ def process_document_full(file_path, newHeader, replacement1, replacement2,
                         if placeholder in run.text:
                             run.text = run.text.replace(placeholder, replacement_str)
 
-    # # Mapping from document label to the keyword(s) we expect in the safety measures.
-    # safety_measures_mapping = {
-    #     "Bleeding Precautions": "bleeding precautions",
-    #     "Fall Precautions": "fall precautions",
-    #     "Clear pathways": "clear pathways",
-    #     "Infection control measures": "infection control",
-    #     "Cane, walker Precautions": ("cane", "walker"),
-    #     "Universal Precautions": "universal precautions",
-    #     "Other:911 protocols": "911 protocol"
-    # }
-    # # --- First Pass: Uncheck all target checkboxes ---
-    # for table in doc.tables:
-    #     for row in table.rows:
-    #         for cell in row.cells:
-    #             for paragraph in cell.paragraphs:
-    #                 for run in paragraph.runs:
-    #                     for label in safety_measures_mapping.keys():
-    #                         if label in run.text:
-    #                             pattern = r"(☒|☐)(" + re.escape(label) + r")"
-    #                             replacement = r"☐\2"
-    # # --- Second Pass: Check individual checkboxes if needed ---
-    # for table in doc.tables:
-    #     for row in table.rows:
-    #         for cell in row.cells:
-    #             for paragraph in cell.paragraphs:
-    #                 for run in paragraph.runs:
-    #                     for label, expected in safety_measures_mapping.items():
-    #                         if label in run.text:
-    #                             should_check = False
-    #                             if isinstance(expected, tuple):
-    #                                 for item in expected:
-    #                                     if any(item in m or m in item for m in measures):
-    #                                         should_check = True
-    #                                         break
-    #                             else:
-    #                                 if any(expected in m or m in expected for m in measures):
-    #                                     should_check = True
-                                
-    #                             pattern = r"(☒|☐)(" + re.escape(label) + r")"
-    #                             replacement = r"☒\2" if should_check else r"☐\2"
-    #                             run.text = re.sub(pattern, replacement, run.text)
     
     # 4. DM II Checkbox Update.
     for table in doc.tables:
@@ -286,8 +249,23 @@ def process_document_full(file_path, newHeader, replacement1, replacement2,
 
                         run.text = text  # Apply updated text
     
+     # 1. Extract Patient Name
+    extractedResults = shared_data.data['extraction_results']
+    patient_name = extractedResults['patientDetails']["name"]  # Already in "Last, First" format
+
+    # 2. Extract Disease Name for this page
+    page_key = f"page{iteration_index+1}"
+    disease_name = st.session_state["disease_mapping"].get(page_key, "Unknown Disease")
+
+    if iteration_index == 9:
+        disease_name = st.session_state["disease_mapping"].get(page_key, "Discharge")
+
+    # **Sanitize filename to remove invalid characters**
+    safe_disease_name = sanitize_filename(disease_name)
+    output_file = f"{page_key} - {patient_name}, {safe_disease_name}.docx"
     # Save the modified document with a name based on iteration (e.g., "page1.docx", "page2.docx", etc.)
-    output_file = f"page{iteration_index+1}.docx"
+    # output_file = f"page{iteration_index+1}.docx"
+
     doc.save(output_file)
     return output_file
 

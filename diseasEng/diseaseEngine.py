@@ -68,6 +68,9 @@ def process_diseases():
             response_json = json.loads(response) if isinstance(response, str) else response
             st.session_state["mainContResponse"][f"page{i + 1}"] = json.dumps(response_json)
 
+            # ✅ Store disease used for each page
+            st.session_state["disease_mapping"][f"page{i + 1}"] = disease_name
+
             # **Remove the medication that was used** (if a valid medication was assigned)
             if "med" in response_json and response_json["med"] not in ["no medication found in database", ""]:
                 used_medication = response_json["med"]
@@ -144,6 +147,9 @@ def process_diseases():
                             parsed_response = json.loads(response) if isinstance(response, str) else response
                             st.session_state["mainContResponse"][page] = json.dumps(parsed_response)
 
+                            # ✅ Update disease mapping for retried disease
+                            st.session_state["disease_mapping"][page] = retry_disease
+
                             # **Remove the medication that was used (if applicable)**
                             if "med" in parsed_response and parsed_response["med"] not in ["no medication found in database", ""]:
                                 used_medication = parsed_response["med"]
@@ -181,6 +187,9 @@ def process_diseases():
                             try:
                                 parsed_response = json.loads(gpt_result) if isinstance(gpt_result, str) else gpt_result
                                 st.session_state["mainContResponse"][page] = json.dumps(parsed_response)
+
+                                # ✅ Update disease mapping for retried disease
+                                st.session_state["disease_mapping"][page] = retry_disease
                             except json.JSONDecodeError:
                                 st.error("Error processing GPT response. Please try again.")
                     st.rerun()
@@ -235,6 +244,8 @@ def process_diseases():
                             try:
                                 parsed_response = json.loads(response) if isinstance(response, str) else response
                                 st.session_state["mainContResponse"][page] = json.dumps(parsed_response)
+
+                                st.session_state["disease_mapping"][page] = retry_disease
 
                                 # **Remove the medication that was used (if applicable)**
                                 if "med" in parsed_response and parsed_response["med"] not in ["no medication found in database", ""]:

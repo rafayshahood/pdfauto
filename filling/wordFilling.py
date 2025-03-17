@@ -12,6 +12,19 @@ import json
 import random
 import re
 
+def remove_trailing_comma(lst):
+    """
+    Removes a trailing comma from the last element of a list if present.
+
+    Parameters:
+    - lst (list): A list of strings.
+
+    Returns:
+    - list: Updated list with no trailing comma in the last element.
+    """
+    if lst and lst[-1].endswith(","):
+        lst[-1] = lst[-1].rstrip(",")  # Remove trailing comma
+    return lst
 
 def clean_safety_measures(safety_measures):
     """
@@ -166,6 +179,11 @@ def fillDoc():
     if getAction == "Reset":
         painScaleArray.append('4/10')
 
+
+    # Extract Patient Name for file naming
+    patient_name = extractedResults['patientDetails']["name"]  # Already in "Last, First" format
+    zip_filename = f"{patient_name}.zip"  # e.g., "Pork, John.zip"
+
     output_files = []
     for i in range(valuesToGet):
         headerPage = extractedResults['patientDetails']['providerName']
@@ -188,6 +206,8 @@ def fillDoc():
             check_r=True
 
 
+            nutririonalReqs = extractedResults['extraDetails']['nutritionalReq'] + ", " + extractedResults['extraDetails']['nutritionalReqCont']
+            updatedNutririonalReqs = remove_trailing_comma(nutririonalReqs)
 
         replacements_first_col = {
             'cane, walker': canWalkerText,
@@ -195,7 +215,7 @@ def fillDoc():
             '4/10': painScaleArray[i],
             'tpainmedhere': extractedResults['medications']['painMedications'],
             '05/07/23': adjust_dates(appointment_dates[i], appointment_times[i], constipation),
-            'NAS, Controlled carbohydrate Low fat, Low cholesterol, NCS, Dash': extractedResults['extraDetails']['nutritionalReq'] + ", " + extractedResults['extraDetails']['nutritionalReqCont']
+            'NAS, Controlled carbohydrate Low fat, Low cholesterol, NCS, Dash': updatedNutririonalReqs
             }
         # Conditionally add the oxygen value only if oxygenFlag is True
         if oxygenFlag:
@@ -203,11 +223,11 @@ def fillDoc():
         else:
             replacements_first_col['OXVAL)('] = ""
 
+
         replacements_second_col = {
             'T- 96.8': "T- " + tempArray[i],
             'HR- 66': "HR- " + hrArray[i],
             'RR -16': "RR - " + rrArray[i],
-            'BS 198': "BS " + bsValue,
             'Sitting 142/89': "Sitting " + random_bpArray[i],
             'PARKER, PETER/LVN': sn_name,
             'MR# 022-001': "MR# " + extractedResults['patientDetails']['medicalRecordNo'][-7:],
@@ -218,6 +238,13 @@ def fillDoc():
             'replacement text': json.loads(mainContResponse.get(f'page{i+1}', '{}')).get("text2", ""),
 
         }
+
+        # bs value only shown if patient is diabetec
+        if dm2_value:
+            replacements_second_col['BS 198'] = "BS " + bsValue
+        else:
+            replacements_second_col['BS 198'] = "BS " 
+
 
         depressed_value = extractedResults['diagnosis']['depression']
         edemaResults = extractedResults['extraDetails']['edema']
@@ -250,7 +277,7 @@ def fillDoc():
     st.download_button(
         label="Download All Notes",
         data=zip_buffer,
-        file_name="all_notes.zip",
+        file_name=zip_filename,
         mime="application/zip"
     )
 

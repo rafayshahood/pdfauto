@@ -25,6 +25,8 @@ def main():
             st.session_state["skipped_pages"] = set()
             st.session_state["replacement_start_index"] = 9
             st.session_state["used_disease_indices"] = set()
+            # Initialize disease mapping in session state
+            st.session_state["disease_mapping"] = {}
 
             st.session_state["initialized"] = True  # Mark initialization as complete
         sign_in()

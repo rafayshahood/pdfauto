@@ -14,6 +14,54 @@ import json
 load_dotenv() 
 extractionResults = []  # global variable available throughout the notebook
 
+def clean_medications(medications_str, pain_medications_str):
+    """
+    Cleans the medications list by ensuring:
+    1. Tylenol is prioritized as the pain medication.
+    2. If no Tylenol, select one pain medication and remove the other.
+    3. The selected pain medication is removed from the general medication list.
+
+    Parameters:
+    - medications_str (str): Medications list as a string (separated by --)
+    - pain_medications_str (str): Pain medications list as a string (separated by --)
+
+    Returns:
+    - updated_medications (str): Cleaned medication list.
+    - updated_pain_medications (str): The chosen pain medication.
+    """
+
+    # Convert to lists
+    medications_list = medications_str.split(" -- ") if medications_str else []
+    pain_meds_list = pain_medications_str.split(" -- ") if pain_medications_str else []
+
+    # Step 1: Prioritize Tylenol
+    selected_pain_med = None
+    for med in pain_meds_list:
+        if "tylenol" in med.lower():  # Prioritize Tylenol
+            selected_pain_med = med
+            break
+
+    # Step 2: If no Tylenol, pick one pain med (if multiple exist)
+    if not selected_pain_med and len(pain_meds_list) > 1:
+        selected_pain_med = pain_meds_list[0]  # Pick the first available one
+
+    # If only one pain medication exists, use it
+    if not selected_pain_med and len(pain_meds_list) == 1:
+        selected_pain_med = pain_meds_list[0]
+
+    # Step 3: Remove all pain medications from the general medication list
+    updated_medications_list = [med for med in medications_list if med not in pain_meds_list]
+
+    # Step 4: Ensure the selected pain medication is removed from medications
+    if selected_pain_med in updated_medications_list:
+        updated_medications_list.remove(selected_pain_med)
+
+    # Convert lists back to strings
+    updated_medications = " -- ".join(updated_medications_list)
+    updated_pain_medications = selected_pain_med if selected_pain_med else ""
+
+    return updated_medications, updated_pain_medications
+
 def count_occurrences_of_flags(words_to_count,text):
     text_lower = text.lower()  # Convert text to lowercase for case-insensitive matching
     total_count = sum(text_lower.count(word) for word in words_to_count)
@@ -47,11 +95,11 @@ class PatientDetails(BaseModel):
     
 class Diagnosis(BaseModel):
     # all other pertinant diagnosis cont
-    pertinentdiagnosisCont: str = Field(description="Other Pertinent Diagnoses continued. Separate each disease with a --")
+    pertinentdiagnosisCont: str = Field(description="Other Pertinent Diagnoses continued. If not present return empty string. Separate each disease with a -")
     # constipation check
     constipated: bool = Field(description="in section MEDICAL SUMMARY / NECESSITY tell whether the patient is constipated or not")
     # pain areas
-    painIn: str = Field(description="Pain in which places of the patient")
+    painIn: str = Field(description="Pain in which places of the patien. If information is not present return empty string")
     # depression check
     # depression: bool = Field(description="In section 19. Mental Status, Whether the individual is depressed or not?")
     # diabetec
@@ -62,7 +110,7 @@ class Diagnosis(BaseModel):
 class Medications(BaseModel):
     # all medications
     medications: str = Field(description="10. Medications: Dose/Frequency/Route (N)ew (C)hanged.  Separate each medication with a --")
-    painMedications: str = Field(description="What is the pain medication give to the individual? Copy paste the pain medication with instruction. If there is no pain medication return empty string.")
+    painMedications: str = Field(description="What is the pain medication give to the individual? Copy paste the pain medication with instruction. If there is no pain medication return empty string. If pain medication is not present return empty strin")
 
 class ExtraDetails(BaseModel):
     # safety measures
@@ -73,7 +121,7 @@ class ExtraDetails(BaseModel):
     #  all nurtitional requirements
     nutritionalReq: str = Field(description="16. Nutritional Requirements")
     #  all nurtitional cont requirements
-    nutritionalReqCont: str = Field(description="16. Nutrition Req. continued")
+    nutritionalReqCont: str = Field(description="16. Nutrition Req. continued. If it is not present return empty string")
     # edema info
     edema: str = Field(description="Edema Management") 
     # cane walker check
@@ -164,6 +212,10 @@ def process_485_pdf(file_path, pages_list=None):
     # Set flags based on presence
     extractionResults["extraDetails"]["can"] = "true" if "cane" in safety_measures else "false"
     extractionResults["extraDetails"]["walker"] = "true" if "walker" in safety_measures else "false"
+
+    extractionResults["medications"]["medications"], extractionResults["medications"]["painMedications"] = clean_medications(extractionResults["medications"]["medications"], extractionResults["medications"]["painMedications"])
+
+
 
     print(f"Response from LLM:\n{extractionResults}")
     # print(extractionResults)
