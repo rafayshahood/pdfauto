@@ -8,3 +8,4 @@ json parsing error removed
 __pycache__/
 # Ignore Streamlit secrets file
 .streamlit/secrets.toml
+.env
