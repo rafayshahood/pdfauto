@@ -1,7 +1,8 @@
 import streamlit as st
 
-correct_username = ""
-correct_password = ""
+# Load credentials from Streamlit secrets
+correct_username = st.secrets["credentials"]["USERNAME"]
+correct_password = st.secrets["credentials"]["PASSWORD"]
 
 def sign_in():
     st.title("Sign In Page")

@@ -1,14 +1,8 @@
-# Ignore specific .docx files
-FORD, HENRY,  Edema, unspecified  - page6.docx
-FORD, HENRY,  Essential (primary) hypertension  - page4.docx
-FORD, HENRY,  Hyperlipidemia, unspecified  - page9.docx
-FORD, HENRY,  Iron deficiency anemia, unspecified  - page8.docx
-FORD, HENRY,  Spondylosis wo myelopathy or radiculopathy  - page3.docx
-FORD, HENRY,  Unspecified asthma, uncomplicated  - page5.docx
-FORD, HENRY,  Weakness  - page7.docx
-FORD, HENRY, Discharge - page10.docx
-FORD, HENRY, Primary osteoarthritis, left shoulder - page1.docx
+# Ignore all .docx files except those in noteTemplates/
+*.docx
+!noteTemplates/*.docx
 
-# Existing ignores
-.DS_Store
-.env
+# Ignore specific logs
+invalid_json_logs.txt
+json parsing error removed
+__pycache__/
