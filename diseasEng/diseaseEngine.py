@@ -15,6 +15,18 @@ client = openai.OpenAI()
 assistant_id = "asst_ugMOPS8hWwcUBYlT95sfJPXb"
 
 
+# Callback function to disable the button
+def disable_run_button():
+    st.session_state["run_disabled"] = True
+
+# Callback function to disable the button
+def disease_run__option_buttons():
+    st.session_state["disease_run__option_buttons"] = True
+
+# Callback function to disable the button
+def disease_run__option_buttons2():
+    st.session_state["disease_run__option_buttons"] = False
+
 def process_diseases():
     
     # gpt2_used_pages = []  # ✅ Track pages where we used GPT2 due to empty medication list
@@ -44,14 +56,14 @@ def process_diseases():
     if "mainContResponse" not in st.session_state:
         st.session_state["mainContResponse"] = {}
 
-    st.title("Medical Disease & Medication Processing")
-    st.subheader("Extracted Patient Information")
+    st.title("Medical Disease & Medication Processing",  anchor=False)
+    st.subheader("Extracted Patient Information",  anchor=False)
     st.write(f"**Patient Name:** {extractedResults['patientDetails']['name']}")
     st.write(f"**Medical Record No:** {extractedResults['patientDetails']['medicalRecordNo']}")
     st.write(f"**Provider:** {extractedResults['patientDetails']['providerName']}")
 
     # Button to run the assistant processing
-    if st.button("Run Disease Processing"):
+    if st.button("Run Disease Processing", on_click=disable_run_button, disabled=st.session_state["run_disabled"]):
         st.write("⏳ Processing diseases...")
         progress_bar = st.progress(0)
 
@@ -139,7 +151,7 @@ def process_diseases():
 
             col1, col2, col3, col4 = st.columns(4)
             with col1:
-                if st.button(f"✔️ Retry with {retry_disease}", key=f"retry_btn_{page}"):
+                if st.button(f"✔️ Retry with {retry_disease}", key=f"retry_btn_{page}", on_click=disease_run__option_buttons, disabled=st.session_state["disease_run__option_buttons"]):
                     with st.spinner(f"Updating {retry_disease}..."):
                         response = wait_for_run_completion(client, assistant_id, retry_disease, provided_medications, o2=oxygen_flag, diabetec=diabetec_flag)
                         print(f"API Response for {retry_disease}: {response}")  # Debugging
@@ -162,10 +174,11 @@ def process_diseases():
                         
                         except json.JSONDecodeError:
                             st.error("Error processing the response. Please try again.")
+                    disease_run__option_buttons2()
                     st.rerun()
 
             with col2:
-                if st.button(f"🌐 Ask GPT for {original_disease}", key=f"gpt_{page}"):
+                if st.button(f"🌐 Ask GPT for {original_disease}", key=f"gpt_{page}", on_click=disease_run__option_buttons, disabled=st.session_state["disease_run__option_buttons"]):
                     with st.spinner(f"Fetching data for {original_disease}..."):
                         gpt_result = fetch_info_from_gpt(client, "disease", original_disease)
                         # Ensure GPT response is correctly parsed as JSON
@@ -175,11 +188,11 @@ def process_diseases():
                                 st.session_state["mainContResponse"][page] = json.dumps(parsed_response)
                             except json.JSONDecodeError:
                                 st.error("Error processing GPT response. Please try again.")
-
+                    disease_run__option_buttons2()
                     st.rerun()
 
             with col3:
-                if st.button(f"🌐 Ask GPT for {retry_disease}", key=f"gpt_med_{page}"):
+                if st.button(f"🌐 Ask GPT for {retry_disease}", key=f"gpt_med_{page}", on_click=disease_run__option_buttons, disabled=st.session_state["disease_run__option_buttons"]):
                     with st.spinner(f"Fetching data for {retry_disease}..."):
                         # Ensure GPT response is correctly parsed as JSON
                         gpt_result = fetch_info_from_gpt(client, "disease", retry_disease)
@@ -192,16 +205,18 @@ def process_diseases():
                                 st.session_state["disease_mapping"][page] = retry_disease
                             except json.JSONDecodeError:
                                 st.error("Error processing GPT response. Please try again.")
+                    disease_run__option_buttons2()
                     st.rerun()
 
             with col4:
-                if st.button(f"❌ Skip {page}", key=f"skip_{page}"):
+                if st.button(f"❌ Skip {page}", key=f"skip_{page}", on_click=disease_run__option_buttons, disabled=st.session_state["disease_run__option_buttons"]):
                     with st.spinner(f"Skipping {original_disease}..."):
                         st.session_state["skipped_pages"].add(page)
                         st.session_state["mainContResponse"][page] = json.dumps({
                             "text1": "no disease found in database",
                             "text2": "no disease found in database"
                         })
+                    disease_run__option_buttons2()
                     st.rerun()
 
 
@@ -238,7 +253,7 @@ def process_diseases():
                 key=f"retry_disease_{page}")
 
             with col1:
-                    if st.button(f"✔️ Retry with {retry_disease}", key=f"retry_btn_{page}"):
+                    if st.button(f"✔️ Retry with {retry_disease}", key=f"retry_btn_{page}", on_click=disease_run__option_buttons, disabled=st.session_state["disease_run__option_buttons"]):
                         with st.spinner(f"Updating {retry_disease}..."):
                             response = wait_for_run_completion(client, assistant_id, retry_disease, provided_medications, o2=oxygen_flag, diabetec=diabetec_flag)
                             try:
@@ -259,12 +274,13 @@ def process_diseases():
                             
                             except json.JSONDecodeError:
                                 st.error("Error processing the response. Please try again.")
+                        disease_run__option_buttons2()
                         st.rerun()
 
 
             with col2:
                 # ✅ Option 2: Fetch a new medication from GPT
-                if st.button(f"🌐 Ask GPT for a new medication", key=f"gpt_med_new_{page}"):
+                if st.button(f"🌐 Ask GPT for a new medication", key=f"gpt_med_new_{page}", on_click=disease_run__option_buttons, disabled=st.session_state["disease_run__option_buttons"]):
                     with st.spinner(f"Fetching new medication for {disease_name}..."):
                         gpt_result = fetch_info_from_gpt(client, "disease", disease_name)
                         if gpt_result:
@@ -273,12 +289,13 @@ def process_diseases():
                                 st.session_state["mainContResponse"][page] = json.dumps(parsed_response)
                             except json.JSONDecodeError:
                                 st.error("Error processing GPT response. Please try again.")
+                    disease_run__option_buttons2()
                     st.rerun()
 
 
             with col3:
             # ✅ Option 3: Get the output from GPT **without medication**
-                if st.button(f"🌐 Get disease info without No medication", key=f"gpt_no_med_{page}"):
+                if st.button(f"🌐 Get disease info without No medication", key=f"gpt_no_med_{page}",on_click=disease_run__option_buttons, disabled=st.session_state["disease_run__option_buttons"]):
                     with st.spinner(f"Fetching disease information without medication..."):
                         gpt_result = fetch_info_from_gpt2(client, disease_name)
                         if gpt_result:
@@ -290,16 +307,18 @@ def process_diseases():
 
                             except json.JSONDecodeError:
                                 st.error("Error processing GPT response. Please try again.")
+                    disease_run__option_buttons2()
                     st.rerun()
 
             with col4:
-                if st.button(f"❌ Skip {page}", key=f"skip_med_{page}"):
+                if st.button(f"❌ Skip {page}", key=f"skip_med_{page}", on_click=disease_run__option_buttons, disabled=st.session_state["disease_run__option_buttons"]):
                     with st.spinner(f"Skipping medication for {disease_name}..."):
                         st.session_state["skipped_pages"].add(page)  # Store skipped page
                         st.session_state["mainContResponse"][page] = json.dumps({
                             "text1": "no medication found in database",
                             "text2": "no medication found in database"
                         })
+                    disease_run__option_buttons2()
                     st.rerun()
 
     # --- Final Display: Show Processed Results If No Issues Exist ---
@@ -308,10 +327,3 @@ def process_diseases():
         shared_data.mainContResponse = st.session_state["mainContResponse"]
         st.session_state["page"] = "doc"
         st.rerun()
-
-        # st.subheader("📄 Processed Responses")
-        # for page, response_json in st.session_state["mainContResponse"].items():
-        #     response = json.loads(response_json)
-        #     st.markdown(f"### 📝 {page}")
-        #     st.write(f"**Text1:** {response['text1']}")
-        #     st.write(f"**Text2:** {response['text2']}")

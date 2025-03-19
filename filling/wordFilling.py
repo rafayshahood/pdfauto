@@ -92,7 +92,14 @@ def fillDoc():
     dm2_value =  shared_data.data['extraction_results']['diagnosis']['diabetec']
     # print(appointment_dates)
     appointment_times = shared_data.data['appointment_times']
-    # print(appointment_times)
+
+    nutritionalReq = extractedResults['extraDetails'].get('nutritionalReq', "")
+    nutritionalReqCont = extractedResults['extraDetails'].get('nutritionalReqCont', "")
+    # Only include `nutritionalReqCont` if it is not empty
+    if nutritionalReqCont.strip():  
+        nutritionalReqs = f"{nutritionalReq}, {nutritionalReqCont}"
+    else:
+        nutritionalReqs = nutritionalReq
 
     dischargeLastPage = {'text1': """Upon today’s assessment patient's condition is stable, vital signs remain stable recently. Patient/PCG monitored with discharge instruction.""",
                          'text2': """SN admitted the patient for comprehensive skilled nursing assessment, observation and evaluation of all body systems. SN to assess vital signs, pain level. SN performed to check vital signs and scale pain (1-10) every visit. """ + add_special_conditions(oxygenFlag, dm2_value) + """SN to evaluate therapeutic response to current/new medications and compliance to medication/diet regimen, home safety issues and psychosocial adjustment. SN informed Patient/PCG regarding possible discharge from services next visit. Patient/ PCG instructed re medication regimen -take all prescribed medications as ordered; if a dose is skipped never take double dose; do not stop taking medicine abruptly, keep your medicine in original container. Instructions are: measures to increase activity tolerance -use energy saving techniques, rest frequently during an activity, schedule an activity when most tolerated-after rest periods, after pain meds, at least one hour after meals; put most frequently used items within easy reach; eat a well-balanced diet; set realistic goals.""",
@@ -122,19 +129,6 @@ def fillDoc():
     # Update shared_data with cleaned response
     shared_data.mainContResponse = mainContResponse
 
-    # Run the function to clean the mainContResponse
-#     mainContResponse = {
-#     "page1": "{\n  \"text1\": \"Altered status due to Type 2 diabetes mellitus. Knowledge deficit regarding measures to control Type 2 diabetes mellitus and the medication Janumet 50-500 mg as ordered by MD.\",\n  \n  \"text2\": \"SN admitted the patient for comprehensive skilled nursing assessment, observation and evaluation of all body systems. SN to assess vital signs, pain level. SN performed to check vital signs and scale pain (1-10) every visit. SN to record blood sugar test results checked by Pt/PCG during the visits and report any significant changes to MD. SN to perform diabetic foot exam upon every visit. PCG assumes DM responsibilities, is confident, capable, and competent in checking blood sugar daily. SN to evaluate therapeutic response to current/new medications and compliance to medication/diet regimen, home safety issues and psychosocial adjustment. [rest of the info]. SN advised Patient/PCG to take medication Janumet 50-500 mg as ordered by MD.\"\n}",
-#     "page2": "{\n  \"text1\": \"no disease found in database\",\n  \"text2\": \"no disease found in database\"\n}",
-#     "page3": "{\n  \"text1\": \"no disease found in database\",\n  \"text2\": \"no disease found in database\"\n}",
-#     "page4": "{\n  \"text1\": \"Altered GU status due to chronic kidney disease. Knowledge deficit regarding chronic kidney disease.\",\n  \"text2\": \"SN instructed regarding chronic kidney disease. Chronic kidney disease (CKD) means your kidneys are damaged and can't filter blood the way they should. The disease is called \u201cchronic\u201d because the damage to your kidneys happens slowly over a long period of time. This damage can cause waste to build up in your body. CKD can also cause other health problems. Often, though, chronic kidney disease has no cure. Treatment usually consists of measures to help control signs and symptoms, reduce complications, and slow progression of the disease. If your kidneys become severely damaged, you may need treatment for end-stage kidney disease. SN advised Patient/PCG to take medication Furosemide 20 mg as ordered by MD.\"\n}",
-#     "page5": "{\n  \"text1\": \"Altered cardiovascular status due to Athscl heart disease of native coronary artery w/o angina pectoris. Knowledge deficit regarding measures to control Athscl heart disease of native coronary artery w/o angina pectoris and the medication Aspirin 81 mg as ordered by MD.\",\n  \n  \"text2\": \"SN admitted the patient for comprehensive skilled nursing assessment, observation and evaluation of all body systems. SN to assess vital signs, pain level. SN performed to check vital signs and scale pain (1-10) every visit. SN to evaluate therapeutic response to current/new medications and compliance to medication/diet regimen, home safety issues and psychosocial adjustment. [rest of the info]. SN advised Patient/PCG to take medication Aspirin 81 mg as ordered by MD.\"\n}",
-#     "page6": "{\n  \"text1\": \"Altered respiratory status due to other disorders of lung. Knowledge deficit regarding measures to control other disorders of lung and the medication Albuterol 90 mcg as ordered by MD.\",\n  \n  \"text2\": \"SN admitted the patient for comprehensive skilled nursing assessment, observation and evaluation of all body systems. SN to assess vital signs, pain level. SN performed to check vital signs and scale pain (1-10) every visit. SN to evaluate therapeutic response to current/new medications and compliance to medication/diet regimen, home safety issues and psychosocial adjustment. [rest of the info]. SN advised Patient/PCG to take medication Albuterol 90 mcg as ordered by MD.\"\n}",
-#     "page7": "{\n  \"text1\": \"Altered respiratory status due to other disorders of lung. Knowledge deficit regarding measures to control other disorders of lung and the medication Albuterol 90 mcg as ordered by MD.\",\n  \n  \"text2\": \"SN admitted the patient for comprehensive skilled nursing assessment, observation and evaluation of all body systems. SN to assess vital signs, pain level. SN performed to check vital signs and scale pain (1-10) every visit. SN to evaluate therapeutic response to current/new medications and compliance to medication/diet regimen, home safety issues and psychosocial adjustment. [rest of the info]. SN advised Patient/PCG to take medication Albuterol 90 mcg as ordered by MD.\"\n}",
-#     "page8": "{\n  \"text1\": \"Altered respiratory status due to other disorders of lung. Knowledge deficit regarding measures to control other disorders of lung and the medication Albuterol 90 mcg as ordered by MD.\",\n  \n  \"text2\": \"SN admitted the patient for comprehensive skilled nursing assessment, observation and evaluation of all body systems. SN to assess vital signs, pain level. SN performed to check vital signs and scale pain (1-10) every visit. SN to evaluate therapeutic response to current/new medications and compliance to medication/diet regimen, home safety issues and psychosocial adjustment. [rest of the info]. SN advised Patient/PCG to take medication Albuterol 90 mcg as ordered by MD.\"\n}",
-#     "page9": "{\n  \"text1\": \"Altered respiratory status due to other disorders of lung. Knowledge deficit regarding measures to control other disorders of lung and the medication Albuterol 90 mcg as ordered by MD.\",\n  \n  \"text2\": \"SN admitted the patient for comprehensive skilled nursing assessment, observation and evaluation of all body systems. SN to assess vital signs, pain level. SN performed to check vital signs and scale pain (1-10) every visit. SN to evaluate therapeutic response to current/new medications and compliance to medication/diet regimen, home safety issues and psychosocial adjustment. [rest of the info]. SN advised Patient/PCG to take medication Albuterol 90 mcg as ordered by MD.\"\n}",
-#     "page10": "{\n  \"text1\": \"Altered respiratory status due to other disorders of lung. Knowledge deficit regarding measures to control other disorders of lung and the medication Albuterol 90 mcg as ordered by MD.\",\n  \n  \"text2\": \"SN admitted the patient for comprehensive skilled nursing assessment, observation and evaluation of all body systems. SN to assess vital signs, pain level. SN performed to check vital signs and scale pain (1-10) every visit. SN to evaluate therapeutic response to current/new medications and compliance to medication/diet regimen, home safety issues and psychosocial adjustment. [rest of the info]. SN advised Patient/PCG to take medication Albuterol 90 mcg as ordered by MD.\"\n}",
-# }
 
     wordFileName = './noteTemplates/1-page-version copy.docx'  # Ensure this file exists in your working directory
 
@@ -206,8 +200,6 @@ def fillDoc():
             check_r=True
 
 
-            nutririonalReqs = extractedResults['extraDetails']['nutritionalReq'] + ", " + extractedResults['extraDetails']['nutritionalReqCont']
-            updatedNutririonalReqs = remove_trailing_comma(nutririonalReqs)
 
         replacements_first_col = {
             'cane, walker': canWalkerText,
@@ -215,7 +207,7 @@ def fillDoc():
             '4/10': painScaleArray[i],
             'tpainmedhere': extractedResults['medications']['painMedications'],
             '05/07/23': adjust_dates(appointment_dates[i], appointment_times[i], constipation),
-            'NAS, Controlled carbohydrate Low fat, Low cholesterol, NCS, Dash': updatedNutririonalReqs
+            'NAS, Controlled carbohydrate Low fat, Low cholesterol, NCS, Dash': nutritionalReqs
             }
         # Conditionally add the oxygen value only if oxygenFlag is True
         if oxygenFlag:

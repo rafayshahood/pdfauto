@@ -2,9 +2,7 @@ import re
 from docx import Document
 import data.shared_data as shared_data
 import streamlit as st
-# LLMWHISPERER_API_KEY="qp6bhMbY3EmpaQqNU2KObHX8fMixMSp0nGcf8GyNnNc"
-# LLMWHISPERER_API_KEY="8S_vXzGY7lwCIi0CrUPEGyPojbZu_sxkr7tjG6DqkLg"
-# LLMWHISPERER_API_KEY="Z_OCRxI2NjZC3EdpoB5aAWNbHKiaHzE3qO6ll1Z37Vc"
+
 
 def sanitize_filename(filename):
     """Removes invalid characters from filenames."""

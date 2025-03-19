@@ -20,6 +20,11 @@ def main():
 
             st.session_state.clear()  # Clears all session state variables
 
+            # buttons disabled
+            st.session_state["submit_disabled"] = False
+            st.session_state["run_disabled"] = False
+            st.session_state["disease_run__option_buttons"] = False
+
             # Reinitialize necessary session state variables
             st.session_state["mainContResponse"] = {}
             st.session_state["skipped_pages"] = set()
