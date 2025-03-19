@@ -1,4 +1,15 @@
 import streamlit as st
+import toml
+import os
+# Check if running on Streamlit Cloud
+if os.path.exists("./.streamlit/secrets.toml"):  # ✅ Running locally
+    with open("./.streamlit/secrets.toml", "r") as f:
+        secrets = toml.load(f)
+    correct_username = secrets["credentials"]["USERNAME"]
+    correct_password = secrets["credentials"]["PASSWORD"]
+else:  # ✅ Running on Streamlit Cloud
+    correct_username = st.secrets["credentials"]["USERNAME"]
+    correct_password = st.secrets["credentials"]["PASSWORD"]
 
 # Load credentials from Streamlit secrets
 correct_username = st.secrets["credentials"]["USERNAME"]
