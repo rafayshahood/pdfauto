@@ -262,7 +262,7 @@ def process_document_full(file_path, newHeader, replacement1, replacement2,
 
     # **Sanitize filename to remove invalid characters**
     safe_disease_name = sanitize_filename(disease_name)
-    output_file = f"{page_key} - {patient_name}, {safe_disease_name}.docx"
+    output_file = f"{patient_name}, {safe_disease_name} - {page_key}.docx"
     # Save the modified document with a name based on iteration (e.g., "page1.docx", "page2.docx", etc.)
     # output_file = f"page{iteration_index+1}.docx"
 
