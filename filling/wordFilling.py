@@ -319,4 +319,4 @@ def fillDoc():
     )
 
     if shared_data.gpt2_used_pages :
-        st.warning(f"⚠️ Some medication places were left blank: {shared_data.gpt2_used_pages}")
+        st.warning(f"⚠️ Some medication places were left blank on pages: {st.session_state['gpt2_used_pages']}")

@@ -73,7 +73,7 @@ def process_diseases():
                 # print(f" wait for run: {response}")
             else:  # ✅ Use GPT if no medications exist
                 response = fetch_info_from_gpt2(client, disease_name)
-                shared_data.gpt2_used_pages.append(i + 1)  # ✅ Store page number
+                st.session_state["gpt2_used_pages"].append(i + 1)  # ✅ Store page number
                 # print(f" gpt2: {response}")
 
             # response = wait_for_run_completion(client, assistant_id, disease_name, provided_medications, o2=oxygen_flag, diabetec=diabetec_flag)
@@ -303,7 +303,8 @@ def process_diseases():
                                 parsed_response = json.loads(gpt_result) if isinstance(gpt_result, str) else gpt_result
                                 parsed_response["med"] = "no medication found in database"  # Ensure medication is left empty
                                 st.session_state["mainContResponse"][page] = json.dumps(parsed_response)
-                                # shared_data.gpt2_used_pages.append(i + 1)  # ✅ Store page number
+                                pagNumMed = int(page.replace("page", "")) - 1
+                                st.session_state["gpt2_used_pages"].append(pagNumMed)  # ✅ Store page number
 
                             except json.JSONDecodeError:
                                 st.error("Error processing GPT response. Please try again.")

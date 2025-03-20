@@ -32,6 +32,7 @@ def main():
             st.session_state["used_disease_indices"] = set()
             # Initialize disease mapping in session state
             st.session_state["disease_mapping"] = {}
+            st.session_state["gpt2_used_pages"] = []
 
             st.session_state["initialized"] = True  # Mark initialization as complete
         sign_in()
