@@ -15,52 +15,50 @@ load_dotenv()
 extractionResults = []  # global variable available throughout the notebook
 
 def clean_medications(medications_str, pain_medications_str):
-    """
-    Cleans the medications list by ensuring:
-    1. Tylenol is prioritized as the pain medication.
-    2. If no Tylenol, select one pain medication and remove the other.
-    3. The selected pain medication is removed from the general medication list.
+    # Split into lists
+    meds_list = [m.strip() for m in medications_str.split('--') if m.strip()]
+    pain_list = [p.strip() for p in pain_medications_str.split('--') if p.strip()]
 
-    Parameters:
-    - medications_str (str): Medications list as a string (separated by --)
-    - pain_medications_str (str): Pain medications list as a string (separated by --)
+    # Step 1: Check for Tylenol
+    tylenol_in_meds = [m for m in meds_list if 'tylenol' in m.lower()]
+    tylenol_in_pain = any('tylenol' in p.lower() for p in pain_list)
 
-    Returns:
-    - updated_medications (str): Cleaned medication list.
-    - updated_pain_medications (str): The chosen pain medication.
-    """
+    # If Tylenol is in meds, move to painMedications if not already there
+    if tylenol_in_meds:
+        meds_list = [m for m in meds_list if 'tylenol' not in m.lower()]
+        if not tylenol_in_pain:
+            pain_list.append(tylenol_in_meds[0])
 
-    # Convert to lists
-    medications_list = medications_str.split(" -- ") if medications_str else []
-    pain_meds_list = pain_medications_str.split(" -- ") if pain_medications_str else []
+    # 🔁 Recalculate tylenol presence after modification
+    tylenol_in_pain = any('tylenol' in p.lower() for p in pain_list)
 
-    # Step 1: Prioritize Tylenol
-    selected_pain_med = None
-    for med in pain_meds_list:
-        if "tylenol" in med.lower():  # Prioritize Tylenol
-            selected_pain_med = med
-            break
+    # Step 2: If Tylenol is not in either list
+    if not tylenol_in_meds and not tylenol_in_pain:
+        if len(pain_list) > 1:
+            first = pain_list[0]
+            extras = pain_list[1:]
+            for med in extras:
+                if not any(med.lower() in m2.lower() for m2 in meds_list):
+                    meds_list.append(med)
+            pain_list = [first]
 
-    # Step 2: If no Tylenol, pick one pain med (if multiple exist)
-    if not selected_pain_med and len(pain_meds_list) > 1:
-        selected_pain_med = pain_meds_list[0]  # Pick the first available one
-
-    # If only one pain medication exists, use it
-    if not selected_pain_med and len(pain_meds_list) == 1:
-        selected_pain_med = pain_meds_list[0]
-
-    # Step 3: Remove all pain medications from the general medication list
-    updated_medications_list = [med for med in medications_list if med not in pain_meds_list]
-
-    # Step 4: Ensure the selected pain medication is removed from medications
-    if selected_pain_med in updated_medications_list:
-        updated_medications_list.remove(selected_pain_med)
+    # Step 3: If Tylenol is in pain list and there are other items
+    if tylenol_in_pain and len(pain_list) > 1:
+        filtered_pain = []
+        for med in pain_list:
+            if 'tylenol' in med.lower():
+                filtered_pain.append(med)
+            else:
+                if not any(med.lower() in m2.lower() for m2 in meds_list):
+                    meds_list.append(med)
+        pain_list = filtered_pain
 
     # Convert lists back to strings
-    updated_medications = " -- ".join(updated_medications_list)
-    updated_pain_medications = selected_pain_med if selected_pain_med else ""
+    updated_medications = ' -- '.join(meds_list)
+    updated_pain_medications = ' -- '.join(pain_list)
 
     return updated_medications, updated_pain_medications
+
 
 def count_occurrences_of_flags(words_to_count,text):
     text_lower = text.lower()  # Convert text to lowercase for case-insensitive matching

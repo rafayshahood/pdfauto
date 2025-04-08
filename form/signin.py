@@ -11,10 +11,6 @@ else:  # ✅ Running on Streamlit Cloud
     correct_username = st.secrets["credentials"]["USERNAME"]
     correct_password = st.secrets["credentials"]["PASSWORD"]
 
-# Load credentials from Streamlit secrets
-correct_username = st.secrets["credentials"]["USERNAME"]
-correct_password = st.secrets["credentials"]["PASSWORD"]
-
 def sign_in():
     st.title("Sign In Page")
     with st.form(key="login_form"):
