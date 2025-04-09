@@ -11,8 +11,12 @@ from fuzzywuzzy import process  # Import fuzzy string matching
 load_dotenv()
 # OpenAI API client
 client = openai.OpenAI()
+# OpenAI Assistant ID
+# assistant_id = "asst_ugMOPS8hWwcUBYlT95sfJPXb"
+# Dav assistant id
+assistant_id = "asst_lGUYZiorUKdHx78buMvGMON6"
 
-assistant_id = st.secrets["assistant"]["assistant_id"]
+
 # Callback function to disable the button
 def disable_run_button():
     st.session_state["run_disabled"] = True
