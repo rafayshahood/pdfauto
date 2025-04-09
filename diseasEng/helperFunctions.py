@@ -106,7 +106,7 @@ def add_special_conditions(o2_flag, diabetec_flag):
         conditions.append("SN instructed patient/PCG on managing diabetes, including blood sugar monitoring and dietary recommendations.")
     return " ".join(conditions)
 
-def fetch_info_from_gpt(client, query_type, query_value, o2_flag=False, diabetec_flag=False):
+def fetch_info_from_gpt(client, query_type, query_value, medication_list=None,  o2_flag=False, diabetec_flag=False):
     """
     Fetches disease or medication information using GPT-4o.
     
@@ -127,31 +127,38 @@ def fetch_info_from_gpt(client, query_type, query_value, o2_flag=False, diabetec
         You are a highly structured medical assistant.
 
         TASK: Search for structured medical information on the disease: '{query_value}'. 
-        - If the disease name contains a leading code (e.g., "I11.9 Hypertensive heart disease with"), **ignore the code** and use only the disease name.
-        - Find a single medication for it
-        - Ensure text1 and text2 remain synchronized.
-        - **Escape all double quotes (`"`) inside text fields** to prevent JSON errors.
+        - Ignore any leading code in the disease name (e.g., "I11.9 Hypertensive heart disease" → "Hypertensive heart disease").
+        - FIRST try to select a medication for the disease from the following provided list:
+        [{medication_list}]
+        - If a matching medication is found, use it exactly as provided (including dosage and instructions). DO NOT modify or reformat it.
+        - If no matching medication is found, then find a suitable medication yourself.
+        - Ensure text1, text2, and med fields remain synchronized.
+        - Escape all double quotes (") inside text fields to prevent JSON errors.
 
         
         RESPONSE FORMAT (STRICTLY FOLLOW THIS JSON FORMAT):
         {{
           "text1": "Altered status due to [{query_value}]. Knowledge deficit regarding measures to control [{query_value}] and the medication [find a medication with instructions e.g Janumet 50-1000 mg, 1 tablet by mouth 2 times daily] as ordered by MD.",
-          "text2": "SN admitted the patient for comprehensive skilled nursing assessment, observation and evaluation of all body systems. SN to assess vital signs, pain level. SN performed to check vital signs and scale pain (1-10) every visit. SN to evaluate therapeutic response to current/new medications and compliance to medication/diet regimen, home safety issues and psychosocial adjustment. [150-200 words description of disease]. .SN instructed Patient/PCG regarding the medication [medication name e.g Janumet 50-1000 mg].  [30-50 word description of medication]. SN advised Patient/PCG to take medication [medication with instructions e.g Janumet 50-1000 mg, 1 tablet by mouth 2 times daily] as ordered by MD."
+          "text2": "SN admitted the patient for comprehensive skilled nursing assessment, observation and evaluation of all body systems. SN to assess vital signs, pain level. SN performed to check vital signs and scale pain (1-10) every visit. SN to evaluate therapeutic response to current/new medications and compliance to medication/diet regimen, home safety issues and psychosocial adjustment. [150-200 words description of disease]. .SN instructed Patient/PCG regarding the medication [medication name e.g Janumet 50-1000 mg].  [30-50 word description of medication]. SN advised Patient/PCG to take medication [medication with instructions e.g Janumet 50-1000 mg, 1 tablet by mouth 2 times daily] as ordered by MD.",
+          "med": "[medication name exactly as selected]"
         }}
 
         [] is a placeolder that needs to be replaced by the desired information as mentioned inside each brackets.
 
         
         STRICT GUIDELINES:
-        - **Return ONLY valid JSON** (no extra text or formatting outside JSON).
-        - **Escape all double quotes (`"`) inside text fields** to prevent JSON parsing errors.  
-        - **Follow the specified format exactly—do not alter structure or wording.
-        - **Exclude unnecessary information (e.g., sources, extra text).
-        - **If the disease is not found, return:**
-          {{
+        - If matching medication found in the provided list, use the exact text without changes.
+        - If no matching medication found, select an appropriate medication yourself.
+        - Always fill the "med" field with the medication name.
+        - If the disease is not found, return:
+        {{
             "text1": "no disease found in database",
-            "text2": "no disease found in database"
-          }}
+            "text2": "no disease found in database",
+            "med": "no disease found in database"
+        }}
+        - Always return ONLY valid JSON (no extra text, no commentary).
+        - Escape all double quotes (") properly inside text fields.
+        - Follow the specified format exactly—do not alter structure or wording.
         """
 
     # Process medication queries

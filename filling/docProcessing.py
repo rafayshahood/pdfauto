@@ -2,6 +2,7 @@ import re
 from docx import Document
 import data.shared_data as shared_data
 import streamlit as st
+from io import BytesIO
 
 
 def sanitize_filename(filename):
@@ -260,11 +261,16 @@ def process_document_full(file_path, newHeader, replacement1, replacement2,
 
     # **Sanitize filename to remove invalid characters**
     safe_disease_name = sanitize_filename(disease_name)
-    output_file = f"{patient_name}, {safe_disease_name} - {page_key}.docx"
     # Save the modified document with a name based on iteration (e.g., "page1.docx", "page2.docx", etc.)
     # output_file = f"page{iteration_index+1}.docx"
 
-    doc.save(output_file)
-    return output_file
+    # output_file = f"{patient_name}, {safe_disease_name} - {page_key}.docx"
+    # doc.save(output_file)
+    # return output_file
 
 
+    safe_filename = f"{patient_name}, {safe_disease_name} - {page_key}.docx"
+    output_stream = BytesIO()
+    doc.save(output_stream)
+    output_stream.seek(0)  # Reset pointer to start
+    return safe_filename, output_stream

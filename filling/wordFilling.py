@@ -248,19 +248,30 @@ def fillDoc():
 
 
     
-        out_file = process_document_full(
+        # out_file = process_document_full(
+        #     wordFileName, headerPage, replacements_first_col, replacements_second_col,
+        #     allSafetyMeasures, dm2_value, edemaResults, depressed_value, i, getAction, valuesToGet, check_vertigo, 
+        #     check_f, check_r, palpitation_check
+        # )
+        # output_files.append(out_file)
+
+        file_name, file_stream =  process_document_full(
             wordFileName, headerPage, replacements_first_col, replacements_second_col,
             allSafetyMeasures, dm2_value, edemaResults, depressed_value, i, getAction, valuesToGet, check_vertigo, 
             check_f, check_r, palpitation_check
         )
-        output_files.append(out_file)
+        output_files.append((file_name, file_stream))
+
+
 
             # Create an in-memory ZIP file
     zip_buffer = io.BytesIO()
 
     with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zipf:
-        for file in output_files:
-            zipf.write(file, arcname=file)  # Add each file to the ZIP
+        for file_name, file_stream in output_files:
+            zipf.writestr(file_name, file_stream.getvalue())
+        # for file in output_files:
+        #     zipf.write(file, arcname=file)  # Add each file to the ZIP
 
     # Move to the beginning of the buffer
     zip_buffer.seek(0)
@@ -281,16 +292,19 @@ def fillDoc():
         ensuring that extra blank pages do not appear.
 
         Parameters:
-        - doc_files (list): List of paths to .docx files to be merged.
+        - doc_files (list): List of (filename, BytesIO stream) tuples.
 
         Returns:
         - io.BytesIO: In-memory file object of the merged document.
         """
         # Load the first document as the base
-        merged_doc = Document(doc_files[0])
+        first_file_name, first_stream = doc_files[0]
+        first_stream.seek(0)
+        merged_doc = Document(first_stream)
 
-        for file in doc_files[1:]:
-            doc = Document(file)
+        for file_name, file_stream in doc_files[1:]:
+            file_stream.seek(0)
+            doc = Document(file_stream)
 
             # Ensure proper spacing and avoid unwanted blank pages
             if merged_doc.paragraphs[-1].text.strip():  # If last paragraph has text, add a page break

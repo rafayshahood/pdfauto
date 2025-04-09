@@ -11,12 +11,8 @@ from fuzzywuzzy import process  # Import fuzzy string matching
 load_dotenv()
 # OpenAI API client
 client = openai.OpenAI()
-# OpenAI Assistant ID
-# assistant_id = "asst_ugMOPS8hWwcUBYlT95sfJPXb"
-# Dav assistant id
-assistant_id = "asst_lGUYZiorUKdHx78buMvGMON6"
 
-
+assistant_id = st.secrets["assistant"]["assistant_id"]
 # Callback function to disable the button
 def disable_run_button():
     st.session_state["run_disabled"] = True
@@ -182,12 +178,22 @@ def process_diseases():
             with col2:
                 if st.button(f"🌐 Ask GPT for {original_disease}", key=f"gpt_{page}", on_click=disease_run__option_buttons, disabled=st.session_state["disease_run__option_buttons"]):
                     with st.spinner(f"Fetching data for {original_disease}..."):
-                        gpt_result = fetch_info_from_gpt(client, "disease", original_disease)
+                        gpt_result = fetch_info_from_gpt(client, "disease", original_disease, provided_medications)
+                        # **Remove the medication that was used (if applicable)**
                         # Ensure GPT response is correctly parsed as JSON
                         if gpt_result:
                             try:
                                 parsed_response = json.loads(gpt_result) if isinstance(gpt_result, str) else gpt_result
                                 st.session_state["mainContResponse"][page] = json.dumps(parsed_response)
+
+                                if "med" in parsed_response and parsed_response["med"] not in ["no medication found in database", ""]:
+                                    used_medication = parsed_response["med"]
+                                    
+                                    # Find the closest match in provided_medications_list
+                                    closest_match = find_closest_medication(used_medication, provided_medications)
+                                    
+                                    if closest_match:
+                                        provided_medications.remove(closest_match)  # Remove the closest matching medication
                             except json.JSONDecodeError:
                                 st.error("Error processing GPT response. Please try again.")
                     disease_run__option_buttons2()
