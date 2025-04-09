@@ -77,7 +77,7 @@ def process_diseases():
                 response = fetch_info_from_gpt2(client, disease_name)
                 st.session_state["gpt2_used_pages"].append(i + 1)  # ✅ Store page number
                 # print(f" gpt2: {response}")
-
+            print(response)
             # response = wait_for_run_completion(client, assistant_id, disease_name, provided_medications, o2=oxygen_flag, diabetec=diabetec_flag)
             response_json = json.loads(response) if isinstance(response, str) else response
             st.session_state["mainContResponse"][f"page{i + 1}"] = json.dumps(response_json)
